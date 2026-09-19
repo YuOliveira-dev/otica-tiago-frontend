@@ -54,6 +54,9 @@ backend/uploads/
 backend/scratch/
 **/scratch/
 
+# Backend (agora em repositório dedicado: otica-tiago-backend)
+backend/
+
 # 7. Script Local de Imagens (Não versionar no GitHub)
 script-py-image-scam/
 **/script-py-image-scam/
