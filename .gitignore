@@ -26,6 +26,9 @@ script-py-image-scam/.env
 *.env
 !.env.example
 !**/.env.example
+.env.example
+/agents
+/docs
 
 # 3. Next.js & Frontend Builds
 .next/
