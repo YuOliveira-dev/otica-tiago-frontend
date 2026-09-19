@@ -27,8 +27,19 @@ script-py-image-scam/.env
 !.env.example
 !**/.env.example
 .env.example
-**/agents
-**/docs
+# Pastas locais e documentação interna
+agents/
+**/agents/
+docs/
+**/docs/
+
+# Arquivos Markdown (ignorar todos com exceção do README.md)
+*.md
+**/*.md
+!README.md
+!**/README.md
+!readme.md
+!**/readme.md
 
 # 3. Next.js & Frontend Builds
 .next/
