@@ -1,0 +1,390 @@
+.heroSection {
+  width: 100%;
+  padding: var(--space-4) var(--space-4) var(--space-6) var(--space-4);
+  display: flex;
+  justify-content: center;
+  background-color: var(--color-bg-body);
+}
+
+@media (min-width: 768px) {
+  .heroSection {
+    padding: var(--space-6) var(--space-6) var(--space-8) var(--space-6);
+  }
+}
+
+/* Dimensões exigidas: 1330px de largura máxima por 400px de altura */
+.bannerWrapper {
+  position: relative;
+  width: 100%;
+  max-width: 1330px;
+  height: 400px;
+  margin: 0 auto;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: 0 16px 36px -8px rgba(8, 13, 26, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@media (max-width: 1024px) {
+  .bannerWrapper {
+    height: 380px;
+  }
+}
+
+@media (max-width: 768px) {
+  .bannerWrapper {
+    height: auto;
+    min-height: 440px;
+  }
+}
+
+/* Track de slides */
+.slidesTrack {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.slide {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--transition-slow), transform var(--transition-slow);
+  transform: scale(1.01);
+  display: flex;
+  align-items: center;
+}
+
+.slideActive {
+  opacity: 1;
+  visibility: visible;
+  transform: scale(1);
+}
+
+/* Fundo nobre em degradê Navy & Âmbar Dourado do Design System TS EYEWEAR */
+.slideBg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 65% 45%, rgba(217, 119, 6, 0.16) 0%, transparent 55%),
+              linear-gradient(135deg, var(--color-primary-950) 0%, var(--color-primary-900) 45%, #0F172A 100%);
+  z-index: 1;
+}
+
+/* Brilhos decorativos no padrão dourado TS EYEWEAR */
+.sparkleOne {
+  position: absolute;
+  bottom: 25px;
+  left: 18%;
+  width: 48px;
+  height: 48px;
+  background: radial-gradient(circle, var(--color-accent-400) 0%, rgba(251, 191, 36, 0) 70%);
+  opacity: 0.6;
+  z-index: 2;
+  filter: blur(2px);
+}
+
+.sparkleTwo {
+  position: absolute;
+  top: 35px;
+  left: 56%;
+  width: 36px;
+  height: 36px;
+  background: radial-gradient(circle, var(--color-accent-400) 0%, rgba(251, 191, 36, 0) 70%);
+  opacity: 0.5;
+  z-index: 2;
+  filter: blur(2px);
+}
+
+/* Layout interno do slide: 3 colunas (Texto, Visual Central, Selo/Marca) */
+.slideContent {
+  position: relative;
+  z-index: 5;
+  width: 100%;
+  height: 100%;
+  padding: 0 var(--space-12);
+  display: grid;
+  grid-template-columns: 1.35fr 1fr 1fr;
+  align-items: center;
+  gap: var(--space-5);
+}
+
+@media (max-width: 1024px) {
+  .slideContent {
+    padding: 0 var(--space-8);
+    grid-template-columns: 1.4fr 1fr;
+  }
+  .rightCol {
+    display: none !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .slideContent {
+    padding: var(--space-8) var(--space-6) calc(var(--space-12) + 8px) var(--space-6);
+    grid-template-columns: 1fr;
+    text-align: center;
+    gap: var(--space-4);
+  }
+  .centerCol {
+    display: none !important;
+  }
+}
+
+/* Coluna Esquerda: Título, Subtítulo e Botão */
+.leftCol {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  z-index: 6;
+}
+
+@media (max-width: 768px) {
+  .leftCol {
+    align-items: center;
+  }
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 4px 12px;
+  background-color: rgba(217, 119, 6, 0.18);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  color: var(--color-accent-400);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  border-radius: var(--radius-full);
+  margin-bottom: var(--space-2);
+}
+
+.title {
+  font-family: var(--font-family-display);
+  font-size: 2.25rem;
+  font-weight: 900;
+  color: var(--color-text-white);
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  margin-bottom: var(--space-3);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+}
+
+@media (max-width: 1024px) {
+  .title {
+    font-size: 1.85rem;
+  }
+}
+
+.subtitle {
+  font-family: var(--font-family-body);
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  color: #CBD5E1;
+  max-width: 440px;
+  margin-bottom: var(--space-5);
+  opacity: 0.95;
+}
+
+.ctaArea {
+  display: flex;
+  align-items: center;
+}
+
+/* Botão CTA seguindo o Design System TS EYEWEAR (Dourado Nobre / Âmbar) */
+.btnCta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 34px;
+  background: linear-gradient(135deg, var(--color-accent-600) 0%, var(--color-accent-500) 100%);
+  border: 2px solid var(--color-accent-400);
+  color: var(--color-text-white);
+  font-size: 0.9375rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-radius: var(--radius-full);
+  text-decoration: none;
+  box-shadow: 0 8px 24px -4px rgba(217, 119, 6, 0.45);
+  transition: all var(--transition-normal);
+}
+
+.btnCta:hover {
+  background: linear-gradient(135deg, var(--color-accent-700) 0%, var(--color-accent-600) 100%);
+  border-color: #FDE68A;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px -4px rgba(217, 119, 6, 0.65);
+}
+
+/* Coluna Central: Visual do Modelo e Chip */
+.centerCol {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  position: relative;
+}
+
+.modelFrame {
+  position: relative;
+  height: 330px;
+  width: 250px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modelImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--radius-xl);
+  border: 4px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5);
+}
+
+.interactiveChip {
+  position: absolute;
+  bottom: var(--space-4);
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--color-bg-surface);
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--color-primary-950);
+  white-space: nowrap;
+}
+
+.chipBrand {
+  letter-spacing: 0.04em;
+}
+
+/* Coluna Direita: Selo de Excelência & Marca TS EYEWEAR */
+.rightCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-5);
+}
+
+.trustBadge {
+  background-color: var(--color-bg-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4) var(--space-5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--color-border);
+  min-width: 175px;
+}
+
+.badgeIconArea {
+  margin-bottom: var(--space-1);
+}
+
+.badgeCompany {
+  font-size: 0.6875rem;
+  font-weight: 800;
+  color: var(--color-accent-600);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.badgeName {
+  font-size: 0.875rem;
+  font-weight: 800;
+  color: var(--color-primary-950);
+  margin-top: 2px;
+}
+
+.badgeMeta {
+  font-size: 0.6875rem;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+.brandSignature {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+}
+
+.brandSignatureSub {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.25em;
+  color: var(--color-accent-400);
+}
+
+.brandSignatureMain {
+  font-family: var(--font-family-display);
+  font-size: 1.75rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: var(--color-text-white);
+}
+
+/* Indicadores inferiores centralizados em formato de cápsula com Design Tokens */
+.dotsContainer {
+  position: absolute;
+  bottom: var(--space-3);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 15;
+  display: flex;
+  align-items: center;
+}
+
+.dotsCapsule {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: rgba(8, 13, 26, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: var(--shadow-md);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background-color: transparent;
+  border: 1.5px solid rgba(255, 255, 255, 0.45);
+  cursor: pointer;
+  padding: 0;
+  transition: all var(--transition-normal);
+}
+
+.dot:hover {
+  background-color: rgba(255, 255, 255, 0.4);
+}
+
+.dotActive {
+  width: 24px;
+  height: 8px;
+  background-color: var(--color-accent-400);
+  border-color: var(--color-accent-400);
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.6);
+  border-radius: var(--radius-full);
+}

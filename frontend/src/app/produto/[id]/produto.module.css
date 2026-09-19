@@ -1,0 +1,366 @@
+.pageContainer {
+  padding: var(--space-8) 0 var(--space-20) 0;
+}
+
+.breadcrumb {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-8);
+}
+
+.breadcrumb a:hover {
+  color: var(--color-primary-900);
+}
+
+/* Layout Duas Colunas */
+.productGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-10);
+  margin-bottom: var(--space-16);
+}
+
+@media (min-width: 1024px) {
+  .productGrid {
+    grid-template-columns: 1.1fr 1fr;
+    align-items: flex-start;
+  }
+}
+
+/* Galeria de Fotos */
+.gallerySticky {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+@media (min-width: 1024px) {
+  .gallerySticky {
+    position: sticky;
+    top: calc(var(--header-height) + 24px);
+  }
+}
+
+.mainImageWrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background-color: #F8FAFC;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10%;
+  box-shadow: var(--shadow-sm);
+}
+
+.mainImage {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: transform 0.4s ease;
+}
+
+.mainImage:hover {
+  transform: scale(1.08);
+}
+
+.thumbnailsRow {
+  display: flex;
+  gap: var(--space-3);
+  overflow-x: auto;
+  padding-bottom: var(--space-2);
+}
+
+.thumbBtn {
+  width: 80px;
+  height: 80px;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--color-border);
+  background-color: #F8FAFC;
+  overflow: hidden;
+  flex-shrink: 0;
+  padding: 6px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.thumbBtn:hover {
+  border-color: var(--color-text-muted);
+}
+
+.thumbBtnActive {
+  border-color: var(--color-primary-600);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
+.thumbImg {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Coluna de Informações e Compra */
+.infoCol {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.metaHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brandBadge {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--color-accent-600);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.skuText {
+  font-family: monospace;
+  font-size: 0.8125rem;
+  color: var(--color-text-subtle);
+}
+
+.title {
+  font-family: var(--font-family-display);
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--color-primary-950);
+  line-height: 1.25;
+}
+
+/* Preço */
+.priceCard {
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-sm);
+}
+
+.priceFrom {
+  font-size: 0.9375rem;
+  color: var(--color-text-subtle);
+  text-decoration: line-through;
+}
+
+.priceMain {
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: var(--color-primary-950);
+  letter-spacing: -0.03em;
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.pixDiscount {
+  font-size: 0.875rem;
+  color: var(--color-success);
+  font-weight: 700;
+}
+
+.installmentText {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  margin-top: 4px;
+}
+
+/* Seletor de Cores */
+.sectionBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.blockTitle {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-text-title);
+  display: flex;
+  justify-content: space-between;
+}
+
+.colorOptions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.colorBtn {
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background-color: #FFFFFF;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text-body);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.colorBtn:hover {
+  border-color: var(--color-primary-500);
+}
+
+.colorBtnSelected {
+  border-color: var(--color-primary-950);
+  background-color: var(--color-bg-subtle);
+  color: var(--color-primary-950);
+  font-weight: 700;
+}
+
+.colorDot {
+  width: 14px;
+  height: 14px;
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Tabela de Medidas Técnicas */
+.specsBox {
+  background-color: var(--color-bg-body);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+}
+
+.specsTable {
+  width: 100%;
+  font-size: 0.875rem;
+  border-collapse: collapse;
+}
+
+.specsTable td {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.specsTable tr:last-child td {
+  border-bottom: none;
+}
+
+.specKey {
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+.specVal {
+  color: var(--color-primary-950);
+  font-weight: 700;
+  text-align: right;
+}
+
+.btnModalMedidas {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-primary-500);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+.btnModalMedidas:hover {
+  text-decoration: underline;
+}
+
+/* Botões de Conversão */
+.ctaContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.btnComprarWhatsApp {
+  width: 100%;
+  padding: 16px 24px;
+  background-color: var(--color-whatsapp);
+  color: #FFFFFF;
+  font-size: 1.0625rem;
+  font-weight: 800;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  box-shadow: 0 8px 20px rgba(37, 211, 102, 0.35);
+  transition: all var(--transition-normal);
+}
+
+.btnComprarWhatsApp:hover {
+  background-color: var(--color-whatsapp-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(37, 211, 102, 0.5);
+}
+
+.btnOrcarGrau {
+  width: 100%;
+  padding: 14px 24px;
+  background-color: var(--color-primary-950);
+  color: #FFFFFF;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  transition: all var(--transition-fast);
+}
+
+.btnOrcarGrau:hover {
+  background-color: var(--color-primary-800);
+}
+
+/* Destaque Frete Grátis Brasil */
+.freteBox {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background-color: #ECFDF5;
+  border: 1px solid #A7F3D0;
+  border-radius: var(--radius-md);
+  color: #065F46;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+/* Sticky Bottom Bar no Mobile */
+.stickyBottomBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: #FFFFFF;
+  border-top: 1px solid var(--color-border);
+  padding: var(--space-3) var(--space-4);
+  z-index: 990;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);
+}
+
+@media (min-width: 768px) {
+  .stickyBottomBar {
+    display: none;
+  }
+}

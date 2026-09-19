@@ -1,0 +1,102 @@
+/* ==========================================================================
+   Design Tokens - TS EYEWEAR Design System
+   Paleta nobre com alta sofisticação óptica, contrastes WCAG AA e glassmorphism
+   ========================================================================== */
+
+:root {
+  /* Brand Navy & Escuros */
+  --color-primary-950: #080D1A;
+  --color-primary-900: #0F172A;
+  --color-primary-800: #1E293B;
+  --color-primary-700: #334155;
+  --color-primary-600: #475569;
+  --color-primary-500: #2563EB;
+  --color-primary-400: #3B82F6;
+  --color-primary-100: #DBEAFE;
+  --color-primary-50:  #EFF6FF;
+
+  /* Gold / Dourado Âmbar (Sofisticação e Badges Nobres) */
+  --color-accent-700: #B45309;
+  --color-accent-600: #D97706;
+  --color-accent-500: #F59E0B;
+  --color-accent-400: #FBBF24;
+  --color-accent-100: #FEF3C7;
+  --color-accent-50:  #FFFBEB;
+
+  /* WhatsApp Oficial */
+  --color-whatsapp:       #25D366;
+  --color-whatsapp-hover: #1EBE5B;
+  --color-whatsapp-dark:  #128C7E;
+  --color-whatsapp-light: #DCF8C6;
+
+  /* Feedback & Status */
+  --color-success: #16A34A;
+  --color-success-bg: #DCFCE7;
+  --color-danger:  #DC2626;
+  --color-danger-bg:  #FEE2E2;
+  --color-warning: #EA580C;
+  --color-warning-bg: #FFEDD5;
+  --color-info:    #0284C7;
+  --color-info-bg:    #E0F2FE;
+
+  /* Superfícies e Textos */
+  --color-bg-body:   #F8FAFC;
+  --color-bg-surface:#FFFFFF;
+  --color-bg-subtle: #F1F5F9;
+  --color-bg-glass:  rgba(255, 255, 255, 0.85);
+  --color-bg-dark-glass: rgba(15, 23, 42, 0.85);
+
+  --color-text-title: #0F172A;
+  --color-text-body:  #334155;
+  --color-text-muted: #64748B;
+  --color-text-subtle:#94A3B8;
+  --color-text-white: #FFFFFF;
+
+  --color-border:        #E2E8F0;
+  --color-border-hover:  #CBD5E1;
+  --color-border-subtle: #F1F5F9;
+
+  /* Tipografia */
+  --font-family-display: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-family-body:    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Escala de Espaçamento Base 4px/8px */
+  --space-0-5: 2px;
+  --space-1:   4px;
+  --space-2:   8px;
+  --space-3:   12px;
+  --space-4:   16px;
+  --space-5:   20px;
+  --space-6:   24px;
+  --space-8:   32px;
+  --space-10:  40px;
+  --space-12:  48px;
+  --space-16:  64px;
+  --space-20:  80px;
+
+  /* Raios de Borda (Border Radius) */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  /* Sombras e Elevação */
+  --shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.10), 0 4px 6px -4px rgba(15, 23, 42, 0.05);
+  --shadow-hover: 0 20px 25px -5px rgba(15, 23, 42, 0.12), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+  --shadow-modal: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
+  --shadow-glow: 0 0 20px rgba(37, 99, 235, 0.25);
+
+  /* Transições e Animações */
+  --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Dimensões Layout */
+  --header-height: 80px;
+  --topbar-height: 38px;
+  --max-width: 1280px;
+}
