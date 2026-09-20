@@ -37,6 +37,7 @@ import {
   INITIAL_CATEGORY_SECTION_CONFIG,
 } from '../../../services/home-categories.service';
 import { Banner, HomeCategoryCard, HomeCategorySectionConfig } from '../../../types';
+import { ActionModal, ActionModalType } from '../../../components/Admin/ActionModal';
 import styles from './bannersAdmin.module.css';
 
 const MAX_FILE_SIZE_MB = 5;
@@ -56,6 +57,26 @@ export default function AdminBannersPage() {
   // Banner Modal State
   const [isBannerModalOpen, setIsBannerModalOpen] = useState(false);
   const [editBannerId, setEditBannerId] = useState<string | null>(null);
+
+  // Action Modal State
+  const [actionModalConfig, setActionModalConfig] = useState<{
+    isOpen: boolean;
+    type: ActionModalType;
+    title?: string;
+    message: string;
+    confirmText?: string;
+    cancelText?: string;
+    onConfirm?: () => void;
+    onCancel?: () => void;
+  }>({
+    isOpen: false,
+    type: 'info',
+    message: '',
+  });
+
+  const closeActionModal = () => {
+    setActionModalConfig((prev) => ({ ...prev, isOpen: false }));
+  };
 
   // Banner Form Fields
   const [title, setTitle] = useState('');
@@ -310,11 +331,21 @@ export default function AdminBannersPage() {
     setIsBannerModalOpen(false);
   };
 
-  const handleDeleteBanner = async (id: string, bannerTitle: string) => {
-    if (window.confirm(`Tem certeza que deseja remover o banner "${bannerTitle}" do carrossel?`)) {
-      await deleteBanner(id);
-      await loadBanners();
-    }
+  const handleDeleteBanner = (id: string, bannerTitle: string) => {
+    setActionModalConfig({
+      isOpen: true,
+      type: 'confirm',
+      title: 'Excluir Banner',
+      message: `Tem certeza que deseja remover o banner "${bannerTitle}" do carrossel principal?`,
+      confirmText: 'Sim, Excluir',
+      cancelText: 'Cancelar',
+      onConfirm: async () => {
+        closeActionModal();
+        await deleteBanner(id);
+        await loadBanners();
+      },
+      onCancel: closeActionModal,
+    });
   };
 
   const handleToggleBannerActive = async (id: string) => {
@@ -469,11 +500,21 @@ export default function AdminBannersPage() {
     setIsCatModalOpen(false);
   };
 
-  const handleDeleteCategoryCard = async (id: string, cardTitle: string) => {
-    if (window.confirm(`Tem certeza que deseja remover o card de categoria "${cardTitle}" da vitrine?`)) {
-      await deleteHomeCategoryCard(id);
-      await loadCategories();
-    }
+  const handleDeleteCategoryCard = (id: string, cardTitle: string) => {
+    setActionModalConfig({
+      isOpen: true,
+      type: 'confirm',
+      title: 'Excluir Card de Categoria',
+      message: `Tem certeza que deseja remover o card de categoria "${cardTitle}" da vitrine?`,
+      confirmText: 'Sim, Excluir',
+      cancelText: 'Cancelar',
+      onConfirm: async () => {
+        closeActionModal();
+        await deleteHomeCategoryCard(id);
+        await loadCategories();
+      },
+      onCancel: closeActionModal,
+    });
   };
 
   const handleToggleCategoryActive = async (id: string) => {
@@ -1312,6 +1353,19 @@ export default function AdminBannersPage() {
           </div>
         </div>
       )}
+
+      {/* Friendly Action Confirmation & Feedback Modal */}
+      <ActionModal
+        isOpen={actionModalConfig.isOpen}
+        type={actionModalConfig.type}
+        title={actionModalConfig.title}
+        message={actionModalConfig.message}
+        confirmText={actionModalConfig.confirmText}
+        cancelText={actionModalConfig.cancelText}
+        onConfirm={actionModalConfig.onConfirm || closeActionModal}
+        onCancel={actionModalConfig.onCancel || closeActionModal}
+        onClose={closeActionModal}
+      />
     </div>
   );
 }

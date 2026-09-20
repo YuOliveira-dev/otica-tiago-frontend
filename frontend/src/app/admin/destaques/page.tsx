@@ -19,6 +19,7 @@ import {
   toggleProductHighlight,
 } from '../../../services/catalog.service';
 import { Product } from '../../../types';
+import { ActionModal, ActionModalType } from '../../../components/Admin/ActionModal';
 import styles from './destaquesAdmin.module.css';
 
 export default function DestaquesAdminPage() {
@@ -27,7 +28,26 @@ export default function DestaquesAdminPage() {
   const [selectedProductId, setSelectedProductId] = useState<string>('');
   const [isLançamentoChecked, setIsLançamentoChecked] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Friendly Action Modal State
+  const [modalConfig, setModalConfig] = useState<{
+    isOpen: boolean;
+    type: ActionModalType;
+    title?: string;
+    message: string;
+    confirmText?: string;
+    cancelText?: string;
+    onConfirm?: () => void;
+    onCancel?: () => void;
+  }>({
+    isOpen: false,
+    type: 'info',
+    message: '',
+  });
+
+  const closeModal = () => {
+    setModalConfig((prev) => ({ ...prev, isOpen: false }));
+  };
 
   const loadData = async () => {
     setIsLoading(true);
@@ -45,12 +65,7 @@ export default function DestaquesAdminPage() {
     loadData();
   }, []);
 
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => {
-      setToastMessage(null);
-    }, 3000);
-  };
+
 
   // Produtos que estão nos "Mais Desejados" da Home
   const featuredProducts = products.filter(
@@ -75,14 +90,28 @@ export default function DestaquesAdminPage() {
       });
 
       const selected = products.find((p) => p.id === selectedProductId);
-      showToast(
-        `"${selected?.title || selected?.titulo}" adicionado à seção Mais Desejados da Home!`
-      );
+      const selectedTitle = selected?.title || selected?.titulo || 'Modelo';
 
       setSelectedProductId('');
       await loadData();
+
+      setModalConfig({
+        isOpen: true,
+        type: 'success',
+        title: 'Modelo Adicionado!',
+        message: `"${selectedTitle}" adicionado à seção Mais Desejados da Home!`,
+        confirmText: 'Entendido',
+        onConfirm: closeModal,
+      });
     } catch (err) {
-      alert('Falha ao adicionar modelo aos destaques da Home.');
+      setModalConfig({
+        isOpen: true,
+        type: 'danger',
+        title: 'Erro ao Adicionar',
+        message: 'Falha ao adicionar modelo aos destaques da Home.',
+        confirmText: 'Fechar',
+        onConfirm: closeModal,
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -106,25 +135,21 @@ export default function DestaquesAdminPage() {
       await toggleProductHighlight(product.id, {
         novidade: newIsNew,
       });
-      showToast(
-        `Etiqueta "Lançamento" ${newIsNew ? 'ativada' : 'desativada'} para este modelo.`
-      );
     } catch {
       await loadData();
-      alert('Erro ao atualizar status de lançamento.');
+      setModalConfig({
+        isOpen: true,
+        type: 'danger',
+        title: 'Erro de Atualização',
+        message: 'Erro ao atualizar status de lançamento.',
+        confirmText: 'Fechar',
+        onConfirm: closeModal,
+      });
     }
   };
 
-  // Remover dos Mais Desejados da Home
-  const handleRemoveHighlight = async (product: Product) => {
-    if (
-      !confirm(
-        `Remover "${product.title || product.titulo}" da seção Mais Desejados da Home? (O produto continuará existindo no catálogo normal)`
-      )
-    ) {
-      return;
-    }
-
+  // Efetiva a remoção da vitrine após confirmação
+  const performRemoval = async (product: Product) => {
     setProducts((prev) =>
       prev.map((p) =>
         p.id === product.id
@@ -137,11 +162,40 @@ export default function DestaquesAdminPage() {
       await toggleProductHighlight(product.id, {
         destaqueHome: false,
       });
-      showToast(`Modelo removido da vitrine da página inicial.`);
+      await loadData();
+      setModalConfig({
+        isOpen: true,
+        type: 'success',
+        title: 'Modelo Removido',
+        message: `"${product.title || product.titulo}" foi removido da vitrine da página inicial.`,
+        confirmText: 'Entendido',
+        onConfirm: closeModal,
+      });
     } catch {
       await loadData();
-      alert('Erro ao remover produto da vitrine.');
+      setModalConfig({
+        isOpen: true,
+        type: 'danger',
+        title: 'Erro ao Remover',
+        message: 'Erro ao remover produto da vitrine.',
+        confirmText: 'Fechar',
+        onConfirm: closeModal,
+      });
     }
+  };
+
+  // Remover dos Mais Desejados da Home (abre modal amigável de confirmação)
+  const handleRemoveHighlight = (product: Product) => {
+    setModalConfig({
+      isOpen: true,
+      type: 'confirm',
+      title: 'Confirmar Remoção',
+      message: `Remover "${product.title || product.titulo}" da seção Mais Desejados da Home?\n\n(O produto continuará existindo no catálogo normal)`,
+      confirmText: 'Sim, Remover',
+      cancelText: 'Cancelar',
+      onConfirm: () => performRemoval(product),
+      onCancel: closeModal,
+    });
   };
 
   const formatPrice = (val: number) =>
@@ -149,12 +203,7 @@ export default function DestaquesAdminPage() {
 
   return (
     <div className={styles.container}>
-      {toastMessage && (
-        <div className={styles.toast}>
-          <CheckCircle2 size={18} color="#10B981" />
-          <span>{toastMessage}</span>
-        </div>
-      )}
+
 
       {/* Cabeçalho */}
       <div className={styles.headerCard}>
@@ -345,6 +394,18 @@ export default function DestaquesAdminPage() {
           })}
         </div>
       )}
+      {/* Friendly Action Confirmation & Feedback Modal */}
+      <ActionModal
+        isOpen={modalConfig.isOpen}
+        type={modalConfig.type}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        confirmText={modalConfig.confirmText}
+        cancelText={modalConfig.cancelText}
+        onConfirm={modalConfig.onConfirm || closeModal}
+        onCancel={modalConfig.onCancel || closeModal}
+        onClose={closeModal}
+      />
     </div>
   );
 }

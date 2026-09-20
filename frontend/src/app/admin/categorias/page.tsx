@@ -10,6 +10,7 @@ import {
   deleteSubcategory,
 } from '../../../services/catalog.service';
 import { Category, Subcategory } from '../../../types';
+import { ActionModal, ActionModalType } from '../../../components/Admin/ActionModal';
 import styles from './categoriasAdmin.module.css';
 
 export default function AdminCategoriasPage() {
@@ -25,6 +26,26 @@ export default function AdminCategoriasPage() {
 
   // Quick subcategory inputs per category { [catId]: string }
   const [subcategoryInputs, setSubcategoryInputs] = useState<Record<string, string>>({});
+
+  // Friendly Action Modal State
+  const [modalConfig, setModalConfig] = useState<{
+    isOpen: boolean;
+    type: ActionModalType;
+    title?: string;
+    message: string;
+    confirmText?: string;
+    cancelText?: string;
+    onConfirm?: () => void;
+    onCancel?: () => void;
+  }>({
+    isOpen: false,
+    type: 'info',
+    message: '',
+  });
+
+  const closeModal = () => {
+    setModalConfig((prev) => ({ ...prev, isOpen: false }));
+  };
 
   useEffect(() => {
     loadCategories();
@@ -91,15 +112,21 @@ export default function AdminCategoriasPage() {
     setIsModalOpen(false);
   };
 
-  const handleDeleteCategory = async (id: string, name: string) => {
-    if (
-      window.confirm(
-        `Tem certeza que deseja excluir a categoria "${name}"? Os produtos vinculados precisarão ser reclassificados.`
-      )
-    ) {
-      await deleteCategory(id);
-      await loadCategories();
-    }
+  const handleDeleteCategory = (id: string, name: string) => {
+    setModalConfig({
+      isOpen: true,
+      type: 'confirm',
+      title: 'Excluir Categoria',
+      message: `Tem certeza que deseja excluir a categoria "${name}"?\n\nOs produtos vinculados precisarão ser reclassificados.`,
+      confirmText: 'Sim, Excluir',
+      cancelText: 'Cancelar',
+      onConfirm: async () => {
+        closeModal();
+        await deleteCategory(id);
+        await loadCategories();
+      },
+      onCancel: closeModal,
+    });
   };
 
   // Subcategories
@@ -310,6 +337,18 @@ export default function AdminCategoriasPage() {
           </div>
         </div>
       )}
+      {/* Friendly Action Confirmation & Feedback Modal */}
+      <ActionModal
+        isOpen={modalConfig.isOpen}
+        type={modalConfig.type}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        confirmText={modalConfig.confirmText}
+        cancelText={modalConfig.cancelText}
+        onConfirm={modalConfig.onConfirm || closeModal}
+        onCancel={modalConfig.onCancel || closeModal}
+        onClose={closeModal}
+      />
     </div>
   );
 }

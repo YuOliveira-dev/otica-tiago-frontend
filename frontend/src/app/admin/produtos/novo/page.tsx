@@ -30,6 +30,7 @@ import {
   ProductVariation,
   ProductStatus,
 } from '../../../../types';
+import { ActionModal, ActionModalType } from '../../../../components/Admin/ActionModal';
 import styles from './adminForm.module.css';
 
 function ProductForm() {
@@ -40,6 +41,26 @@ function ProductForm() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+
+  // Friendly Action Modal State
+  const [modalConfig, setModalConfig] = useState<{
+    isOpen: boolean;
+    type: ActionModalType;
+    title?: string;
+    message: string;
+    confirmText?: string;
+    cancelText?: string;
+    onConfirm?: () => void;
+    onCancel?: () => void;
+  }>({
+    isOpen: false,
+    type: 'info',
+    message: '',
+  });
+
+  const closeModal = () => {
+    setModalConfig((prev) => ({ ...prev, isOpen: false }));
+  };
 
   // Basic Information
   const [id, setId] = useState<string>('');
@@ -281,10 +302,33 @@ function ProductForm() {
 
   const removeVariation = (index: number) => {
     if (variations.length <= 1) {
-      alert('O produto precisa ter pelo menos 1 variação cadastrada.');
+      setModalConfig({
+        isOpen: true,
+        type: 'warning',
+        title: 'Atenção',
+        message: 'O produto precisa ter pelo menos 1 variação cadastrada.',
+        confirmText: 'Entendido',
+        onConfirm: closeModal,
+      });
       return;
     }
-    setVariations((prev) => prev.filter((_, i) => i !== index));
+    setModalConfig({
+      isOpen: true,
+      type: 'confirm',
+      title: 'Remover Variação',
+      message: `Deseja realmente remover a variação "${
+        variations[index].colorName ||
+        variations[index].corNome ||
+        `Variação ${index + 1}`
+      }"?`,
+      confirmText: 'Remover',
+      cancelText: 'Cancelar',
+      onConfirm: () => {
+        setVariations((prev) => prev.filter((_, i) => i !== index));
+        closeModal();
+      },
+      onCancel: closeModal,
+    });
   };
 
   // Total stock calculation
@@ -295,11 +339,25 @@ function ProductForm() {
     e.preventDefault();
 
     if (!title.trim()) {
-      alert('Por favor, informe o título do produto.');
+      setModalConfig({
+        isOpen: true,
+        type: 'warning',
+        title: 'Campo Obrigatório',
+        message: 'Por favor, informe o título do produto.',
+        confirmText: 'Entendido',
+        onConfirm: closeModal,
+      });
       return;
     }
     if (!parentSku.trim()) {
-      alert('Por favor, informe o código SKU Pai.');
+      setModalConfig({
+        isOpen: true,
+        type: 'warning',
+        title: 'Campo Obrigatório',
+        message: 'Por favor, informe o código SKU Pai.',
+        confirmText: 'Entendido',
+        onConfirm: closeModal,
+      });
       return;
     }
 
@@ -348,11 +406,27 @@ function ProductForm() {
 
     try {
       await saveAdminProduct(newProduct);
-      alert(`Produto "${newProduct.title}" salvo com sucesso!`);
-      router.push('/admin/produtos');
+      setModalConfig({
+        isOpen: true,
+        type: 'success',
+        title: 'Produto Salvo com Sucesso!',
+        message: `Produto "${newProduct.title}" salvo com sucesso!`,
+        confirmText: 'Ir para Lista de Produtos',
+        onConfirm: () => {
+          closeModal();
+          router.push('/admin/produtos');
+        },
+      });
     } catch (err) {
       console.error('Erro ao salvar produto:', err);
-      alert('Ocorreu um erro ao salvar o produto.');
+      setModalConfig({
+        isOpen: true,
+        type: 'danger',
+        title: 'Erro ao Salvar',
+        message: 'Ocorreu um erro ao salvar o produto.',
+        confirmText: 'Tentar Novamente',
+        onConfirm: closeModal,
+      });
     } finally {
       setIsSaving(false);
     }
@@ -973,6 +1047,19 @@ function ProductForm() {
           {isSaving ? 'Salvando...' : editId ? 'Atualizar Produto' : 'Publicar Produto'}
         </button>
       </div>
+
+      {/* Friendly Action Confirmation & Feedback Modal */}
+      <ActionModal
+        isOpen={modalConfig.isOpen}
+        type={modalConfig.type}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        confirmText={modalConfig.confirmText}
+        cancelText={modalConfig.cancelText}
+        onConfirm={modalConfig.onConfirm || closeModal}
+        onCancel={modalConfig.onCancel || closeModal}
+        onClose={closeModal}
+      />
     </form>
   );
 }

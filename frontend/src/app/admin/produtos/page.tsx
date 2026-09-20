@@ -16,6 +16,7 @@ import {
   getCategories,
 } from '../../../services/catalog.service';
 import { Product, Category, ProductStatus } from '../../../types';
+import { ActionModal, ActionModalType } from '../../../components/Admin/ActionModal';
 import styles from './produtosAdmin.module.css';
 
 export default function AdminProdutosPage() {
@@ -29,8 +30,25 @@ export default function AdminProdutosPage() {
   const [categoryFilter, setCategoryFilter] = useState<string>('TODAS');
   const [stockFilter, setStockFilter] = useState<string>('TODOS');
 
-  // Toast feedback
-  const [toast, setToast] = useState<string | null>(null);
+  // Friendly Action Modal State
+  const [modalConfig, setModalConfig] = useState<{
+    isOpen: boolean;
+    type: ActionModalType;
+    title?: string;
+    message: string;
+    confirmText?: string;
+    cancelText?: string;
+    onConfirm?: () => void;
+    onCancel?: () => void;
+  }>({
+    isOpen: false,
+    type: 'info',
+    message: '',
+  });
+
+  const closeModal = () => {
+    setModalConfig((prev) => ({ ...prev, isOpen: false }));
+  };
 
   useEffect(() => {
     async function loadData() {
@@ -50,38 +68,62 @@ export default function AdminProdutosPage() {
     loadData();
   }, []);
 
-  const showToast = (message: string) => {
-    setToast(message);
-    setTimeout(() => {
-      setToast(null);
-    }, 3000);
-  };
-
-  // Toggle visibility status
-  const handleToggleStatus = async (product: Product) => {
-    const isCurrentlyActive = product.status === 'ACTIVE' || product.status === 'ATIVO';
-    const newStatus: ProductStatus = isCurrentlyActive ? 'HIDDEN' : 'ACTIVE';
+  // Perform toggle visibility status
+  const performToggleStatus = async (product: Product, newStatus: ProductStatus) => {
+    const title = product.title || product.titulo || '';
 
     // Optimistic update
     setProducts((prev) =>
       prev.map((p) => (p.id === product.id ? { ...p, status: newStatus } : p))
     );
 
-    const title = product.title || product.titulo || '';
-
     try {
       await toggleProductVisibility(product.id, newStatus);
-      showToast(
-        `Modelo "${title}" agora está ${
+      setModalConfig({
+        isOpen: true,
+        type: 'success',
+        title: 'Status Atualizado',
+        message: `Modelo "${title}" agora está ${
           newStatus === 'ACTIVE' ? 'ATIVO no catálogo' : 'OCULTO (Rascunho)'
-        }!`
-      );
+        }!`,
+        confirmText: 'Entendido',
+        onConfirm: closeModal,
+      });
     } catch {
       // Revert if failed
       setProducts((prev) =>
         prev.map((p) => (p.id === product.id ? { ...p, status: product.status } : p))
       );
-      alert('Erro ao alterar status de visibilidade.');
+      setModalConfig({
+        isOpen: true,
+        type: 'danger',
+        title: 'Erro ao Alterar',
+        message: 'Erro ao alterar status de visibilidade.',
+        confirmText: 'Fechar',
+        onConfirm: closeModal,
+      });
+    }
+  };
+
+  // Toggle visibility status with confirmation when hiding
+  const handleToggleStatus = (product: Product) => {
+    const isCurrentlyActive = product.status === 'ACTIVE' || product.status === 'ATIVO';
+    const newStatus: ProductStatus = isCurrentlyActive ? 'HIDDEN' : 'ACTIVE';
+    const title = product.title || product.titulo || '';
+
+    if (isCurrentlyActive) {
+      setModalConfig({
+        isOpen: true,
+        type: 'confirm',
+        title: 'Ocultar Modelo',
+        message: `Deseja ocultar o modelo "${title}" do catálogo público?\n\nEle será mantido no sistema, mas os clientes não poderão visualizá-lo na loja online.`,
+        confirmText: 'Sim, Ocultar',
+        cancelText: 'Cancelar',
+        onConfirm: () => performToggleStatus(product, newStatus),
+        onCancel: closeModal,
+      });
+    } else {
+      performToggleStatus(product, newStatus);
     }
   };
 
@@ -129,13 +171,7 @@ export default function AdminProdutosPage() {
 
   return (
     <div className={styles.container}>
-      {/* Toast Notification */}
-      {toast && (
-        <div className={styles.toastNotification}>
-          <CheckCircle size={18} color="#10b981" />
-          <span>{toast}</span>
-        </div>
-      )}
+
 
       {/* Header */}
       <div className={styles.headerRow}>
@@ -394,6 +430,18 @@ export default function AdminProdutosPage() {
           </table>
         </div>
       </div>
+      {/* Friendly Action Confirmation & Feedback Modal */}
+      <ActionModal
+        isOpen={modalConfig.isOpen}
+        type={modalConfig.type}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        confirmText={modalConfig.confirmText}
+        cancelText={modalConfig.cancelText}
+        onConfirm={modalConfig.onConfirm || closeModal}
+        onCancel={modalConfig.onCancel || closeModal}
+        onClose={closeModal}
+      />
     </div>
   );
 }
