@@ -21,7 +21,12 @@ export interface LoginResponse {
 }
 
 const getApiBaseUrl = () => {
-  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+  let url = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api').trim();
+  url = url.replace(/\/+$/, '');
+  if (!url.endsWith('/api')) {
+    url = `${url}/api`;
+  }
+  return url;
 };
 
 /**
@@ -53,7 +58,18 @@ export async function loginAdmin(email: string, senha: string): Promise<LoginRes
       body: JSON.stringify({ email, senha }),
     });
 
-    const data = await res.json();
+    const contentType = res.headers.get('content-type') || '';
+    let data: any = {};
+
+    if (contentType.includes('application/json')) {
+      data = await res.json();
+    } else {
+      const text = await res.text();
+      console.error('Resposta não-JSON recebida da API:', text.slice(0, 300));
+      throw new Error(
+        'Falha na comunicação com o servidor. Verifique se a variável NEXT_PUBLIC_API_URL está apontando para o backend (https://otica-tiago-backend.vercel.app/api).'
+      );
+    }
 
     if (!res.ok || !data.sucesso) {
       throw new Error(data.erro || 'Credenciais de acesso incorretas.');
