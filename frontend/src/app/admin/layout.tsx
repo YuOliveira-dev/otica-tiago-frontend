@@ -14,6 +14,7 @@ import {
   X,
   LogOut,
   Loader2,
+  Sparkles,
 } from 'lucide-react';
 import {
   isAdminAuthenticated,
@@ -99,6 +100,11 @@ export default function AdminLayout({
       icon: <PlusCircle size={18} />,
     },
     {
+      label: 'Mais Desejados',
+      href: '/admin/destaques',
+      icon: <Sparkles size={18} />,
+    },
+    {
       label: 'Categorias',
       href: '/admin/categorias',
       icon: <Tag size={18} />,
@@ -114,6 +120,7 @@ export default function AdminLayout({
     if (pathname.includes('/admin/dashboard')) return 'Painel de Controle';
     if (pathname.includes('/admin/produtos/novo')) return 'Cadastrar Produto';
     if (pathname.includes('/admin/produtos')) return 'Catálogo de Produtos';
+    if (pathname.includes('/admin/destaques')) return 'Modelos Mais Desejados (Home)';
     if (pathname.includes('/admin/categorias')) return 'Gestão de Categorias';
     if (pathname.includes('/admin/banners')) return 'Gestão de Banners';
     return 'Painel Administrativo';

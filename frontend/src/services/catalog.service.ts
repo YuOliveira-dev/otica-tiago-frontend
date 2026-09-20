@@ -468,6 +468,62 @@ export async function toggleProductVisibility(
 }
 
 /**
+ * Alterna se o produto aparece nos "Modelos Mais Desejados" da Home e/ou como "Lançamento"
+ */
+export async function toggleProductHighlight(
+  id: string,
+  options: { destaqueHome?: boolean; novidade?: boolean }
+): Promise<Product | null> {
+  const baseUrl = getApiBaseUrl();
+  const headers = getAuthHeaders();
+
+  try {
+    const res = await fetch(`${baseUrl}/admin/produtos/${id}/destaque`, {
+      method: 'PATCH',
+      headers,
+      credentials: 'include',
+      body: JSON.stringify(options),
+    });
+
+    if (res.ok) {
+      const json = await res.json();
+      if (json.sucesso && json.dados) {
+        const updated = mapBackendProductToFrontend(json.dados);
+        const idx = productsState.findIndex((p) => p.id === id);
+        if (idx >= 0) productsState[idx] = updated;
+        return updated;
+      }
+    }
+  } catch (err) {
+    console.warn('Falha na API para destaque, atualizando em memória:', err);
+  }
+
+  // Fallback em memória
+  const idx = productsState.findIndex((p) => p.id === id);
+  if (idx !== -1) {
+    const current = productsState[idx];
+    const updated: Product = {
+      ...current,
+      featuredHome:
+        options.destaqueHome !== undefined
+          ? options.destaqueHome
+          : current.featuredHome,
+      destaqueHome:
+        options.destaqueHome !== undefined
+          ? options.destaqueHome
+          : current.destaqueHome,
+      isNew:
+        options.novidade !== undefined ? options.novidade : current.isNew,
+      novidade:
+        options.novidade !== undefined ? options.novidade : current.novidade,
+    };
+    productsState[idx] = updated;
+    return updated;
+  }
+  return null;
+}
+
+/**
  * Salva ou atualiza um produto no backend conectado ao PostgreSQL
  */
 export async function saveAdminProduct(product: Product): Promise<Product> {
@@ -806,6 +862,7 @@ export const getCategorias = getCategories;
 export const getProdutosAdmin = getAdminProducts;
 export const getMetricasDashboard = getDashboardMetrics;
 export const alternarVisibilidadeProduto = toggleProductVisibility;
+export const alternarDestaqueProduto = toggleProductHighlight;
 export const salvarProdutoAdmin = saveAdminProduct;
 export const ajustarEstoqueVariacao = adjustVariationStock;
 export const salvarCategoria = saveCategory;
