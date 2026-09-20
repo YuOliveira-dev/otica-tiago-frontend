@@ -34,6 +34,18 @@ const getAuthHeaders = () => {
 let productsState: Product[] = [...MOCK_PRODUCTS];
 let categoriesState: Category[] = [...MOCK_CATEGORIES];
 
+export function normalizeMediaUrl(url?: string): string {
+  if (!url) return '';
+  // Se a URL contiver qualquer preview deployment da Vercel para a API de mídia, normaliza para o domínio de produção oficial
+  if (url.includes('.vercel.app/api/midia/blob')) {
+    return url.replace(
+      /https:\/\/[^/]+\.vercel\.app\/api\/midia\/blob/,
+      'https://otica-tiago-backend.vercel.app/api/midia/blob'
+    );
+  }
+  return url;
+}
+
 /**
  * Normaliza os produtos retornados pelo backend Express/Prisma para o formato do frontend
  */
@@ -47,6 +59,7 @@ export function mapBackendProductToFrontend(p: any): Product {
       corNome: v.corNome || v.colorName || 'Padrão',
       colorHex: v.corHex || v.colorHex || '#000000',
       corHex: v.corHex || v.colorHex || '#000000',
+      imageUrl: normalizeMediaUrl(v.imageUrl || v.fotoUrl),
       lensWidthMm: v.aroMm ?? v.lensWidthMm ?? 52,
       aroMm: v.aroMm ?? v.lensWidthMm ?? 52,
       bridgeMm: v.ponteMm ?? v.bridgeMm ?? 19,
@@ -66,7 +79,7 @@ export function mapBackendProductToFrontend(p: any): Product {
   const media: ProductMedia[] = (p.midias || p.media || []).map(
     (m: any, idx: number) => ({
       id: m.id || `m-${idx}`,
-      url: m.url,
+      url: normalizeMediaUrl(m.url),
       type: m.tipo === 'VIDEO' || m.type === 'VIDEO' ? 'VIDEO' : 'IMAGE',
       tipo: m.tipo === 'VIDEO' || m.type === 'VIDEO' ? 'VIDEO' : 'IMAGE',
       order: m.ordem ?? m.order ?? idx + 1,
