@@ -174,3 +174,33 @@ export function getAdminToken(): string | null {
   if (typeof window === 'undefined') return null;
   return localStorage.getItem(AUTH_TOKEN_KEY);
 }
+
+/**
+ * Valida a sessão administrativa no backend
+ */
+export async function verifyAdminSession(): Promise<boolean> {
+  const baseUrl = getApiBaseUrl();
+  const token = getAdminToken();
+  if (!token) return false;
+
+  try {
+    const res = await fetch(`${baseUrl}/admin/auth/me`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      credentials: 'include',
+    });
+
+    if (res.status === 401) {
+      await logoutAdmin();
+      return false;
+    }
+
+    if (!res.ok) return false;
+    const data = await res.json();
+    return !!data.sucesso;
+  } catch {
+    // Em caso de falha transitória de rede, não desloga
+    return true;
+  }
+}

@@ -658,6 +658,11 @@ export async function uploadMediaAdmin(
 
   const data = await res.json();
   if (!res.ok || !data.sucesso) {
+    if (res.status === 401 && typeof window !== 'undefined') {
+      localStorage.removeItem('ts_eyewear_admin_token');
+      localStorage.removeItem('ts_eyewear_admin_user');
+      window.location.href = '/admin';
+    }
     throw new Error(data.erro || 'Falha ao enviar imagem para o armazenamento.');
   }
 

@@ -20,6 +20,7 @@ import {
   isAdminAuthenticated,
   logoutAdmin,
   getAdminUser,
+  verifyAdminSession,
 } from '../../services/auth.service';
 import styles from './adminLayout.module.css';
 
@@ -49,6 +50,13 @@ export default function AdminLayout({
     } else {
       setAdminUser(getAdminUser());
       setIsAuthChecked(true);
+
+      // Validação proativa: se a chave JWT foi rotacionada no backend, limpa a sessão antiga e redireciona
+      verifyAdminSession().then((isValid) => {
+        if (!isValid) {
+          router.replace('/admin');
+        }
+      });
     }
   }, [pathname, isLoginPage, router]);
 
