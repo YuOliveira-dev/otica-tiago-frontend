@@ -152,10 +152,13 @@ export async function getProducts(
     if (filters?.sortBy || filters?.ordenar) {
       params.set('ordenar', (filters.sortBy || filters.ordenar)!);
     }
+    if (!params.has('limite')) {
+      params.set('limite', '50');
+    }
 
     const qs = params.toString();
     const res = await fetch(`${baseUrl}/produtos${qs ? `?${qs}` : ''}`, {
-      next: { revalidate: 10 },
+      cache: 'no-store',
     });
 
     if (res.ok) {
@@ -334,7 +337,7 @@ export async function getNewArrivalProducts(): Promise<Product[]> {
 export async function getCategories(): Promise<Category[]> {
   try {
     const baseUrl = getApiBaseUrl();
-    const res = await fetch(`${baseUrl}/categorias`, { next: { revalidate: 10 } });
+    const res = await fetch(`${baseUrl}/categorias`, { cache: 'no-store' });
     if (res.ok) {
       const json = await res.json();
       if (json.sucesso && Array.isArray(json.dados) && json.dados.length > 0) {

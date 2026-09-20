@@ -8,6 +8,9 @@ import { getFeaturedProducts } from '../services/catalog.service';
 import { generateWhatsAppLink } from '../services/whatsapp';
 import styles from './page.module.css';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function HomePage() {
   const featuredProducts = await getFeaturedProducts();
 
