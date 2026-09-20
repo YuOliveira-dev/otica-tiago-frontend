@@ -730,10 +730,10 @@ function ProductForm() {
             <>
               <Loader2 size={40} className="animate-spin" color="var(--color-primary-500)" />
               <div className={styles.dropzoneText}>
-                Otimizando e enviando para o Vercel Blob...
+                Otimizando e salvando sua mídia...
               </div>
               <div className={styles.dropzoneSubtext}>
-                Convertendo para WebP 600x600px e salvando no armazenamento de alta performance
+                Convertendo para WebP 600x600px e salvando...
               </div>
             </>
           ) : (
