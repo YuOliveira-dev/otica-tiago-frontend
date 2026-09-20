@@ -218,15 +218,8 @@ function ProductForm() {
         const file = files[index];
         const isVideo = file.type.startsWith('video');
 
-        // Envia para o backend para otimização Sharp (WebP) e armazenamento no Vercel Blob
-        let finalUrl = '';
-        try {
-          finalUrl = await uploadProductImage(file, prefix);
-        } catch (uploadErr: any) {
-          console.warn('Falha no upload para Vercel Blob, usando fallback temporário:', uploadErr);
-          finalUrl = URL.createObjectURL(file);
-        }
-
+        // Envia para o backend para otimização Sharp (WebP) e armazenamento direto no Vercel Blob
+        const finalUrl = await uploadProductImage(file, prefix);
         const isFirst = mediaList.length === 0 && index === 0;
 
         newMediaItems.push({
@@ -345,11 +338,10 @@ function ProductForm() {
       isOpen: true,
       type: 'confirm',
       title: 'Remover Variação',
-      message: `Deseja realmente remover a variação "${
-        variations[index].colorName ||
+      message: `Deseja realmente remover a variação "${variations[index].colorName ||
         variations[index].corNome ||
         `Variação ${index + 1}`
-      }"?`,
+        }"?`,
       confirmText: 'Remover',
       cancelText: 'Cancelar',
       onConfirm: () => {
@@ -384,6 +376,19 @@ function ProductForm() {
         type: 'warning',
         title: 'Campo Obrigatório',
         message: 'Por favor, informe o código SKU Pai.',
+        confirmText: 'Entendido',
+        onConfirm: closeModal,
+      });
+      return;
+    }
+
+    const hasInvalidBlobUrl = mediaList.some((m) => m.url?.startsWith('blob:'));
+    if (hasInvalidBlobUrl) {
+      setModalConfig({
+        isOpen: true,
+        type: 'warning',
+        title: 'Mídia Pendente',
+        message: 'Algumas imagens selecionadas ainda não foram salvas na nuvem. Por favor, remova ou reenvie as imagens para que sejam salvas no Vercel Blob.',
         confirmText: 'Entendido',
         onConfirm: closeModal,
       });
@@ -775,9 +780,8 @@ function ProductForm() {
             {mediaList.map((media, index) => (
               <div
                 key={media.id}
-                className={`${styles.mediaItem} ${
-                  media.isPrimary ? styles.mediaItemPrimary : ''
-                }`}
+                className={`${styles.mediaItem} ${media.isPrimary ? styles.mediaItemPrimary : ''
+                  }`}
               >
                 <div className={styles.mediaThumbWrapper}>
                   {media.type === 'VIDEO' ? (
@@ -873,8 +877,8 @@ function ProductForm() {
               {totalStock === 0
                 ? 'Produto Esgotado'
                 : totalStock <= 3
-                ? 'Últimas Unidades'
-                : 'Em Estoque'}
+                  ? 'Últimas Unidades'
+                  : 'Em Estoque'}
             </div>
           </div>
         </div>
@@ -1038,9 +1042,8 @@ function ProductForm() {
 
         <div className={styles.statusSelector}>
           <div
-            className={`${styles.statusOption} ${
-              status === 'ACTIVE' || status === 'ATIVO' ? styles.statusOptionActive : ''
-            }`}
+            className={`${styles.statusOption} ${status === 'ACTIVE' || status === 'ATIVO' ? styles.statusOptionActive : ''
+              }`}
             onClick={() => setStatus('ACTIVE')}
           >
             <div className={styles.statusOptionHeader}>
@@ -1053,9 +1056,8 @@ function ProductForm() {
           </div>
 
           <div
-            className={`${styles.statusOption} ${
-              status === 'HIDDEN' || status === 'OCULTO' ? styles.statusOptionHidden : ''
-            }`}
+            className={`${styles.statusOption} ${status === 'HIDDEN' || status === 'OCULTO' ? styles.statusOptionHidden : ''
+              }`}
             onClick={() => setStatus('HIDDEN')}
           >
             <div className={styles.statusOptionHeader}>
@@ -1068,9 +1070,8 @@ function ProductForm() {
           </div>
 
           <div
-            className={`${styles.statusOption} ${
-              status === 'ARCHIVED' || status === 'ARQUIVADO' ? styles.statusOptionArchived : ''
-            }`}
+            className={`${styles.statusOption} ${status === 'ARCHIVED' || status === 'ARQUIVADO' ? styles.statusOptionArchived : ''
+              }`}
             onClick={() => setStatus('ARCHIVED')}
           >
             <div className={styles.statusOptionHeader}>
