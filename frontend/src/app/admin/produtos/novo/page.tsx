@@ -17,11 +17,13 @@ import {
   Sparkles,
   Info,
   CheckCircle,
+  Loader2,
 } from 'lucide-react';
 import {
   getCategories,
   getProductById,
   saveAdminProduct,
+  uploadProductImage,
 } from '../../../../services/catalog.service';
 import {
   Product,
@@ -41,6 +43,7 @@ function ProductForm() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploadingMedia, setIsUploadingMedia] = useState(false);
 
   // Friendly Action Modal State
   const [modalConfig, setModalConfig] = useState<{
@@ -201,28 +204,54 @@ function ProductForm() {
   const availableSubcategories =
     categories.find((c) => c.id === categoryId)?.subcategories || [];
 
-  // File upload
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // File upload directly to Vercel Blob via backend API
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
+    setIsUploadingMedia(true);
+    const prefix = parentSku.trim() || 'produto';
     const newMediaItems: ProductMedia[] = [];
 
-    Array.from(files).forEach((file, index) => {
-      const isVideo = file.type.startsWith('video');
-      const url = URL.createObjectURL(file);
-      const isFirst = mediaList.length === 0 && index === 0;
+    try {
+      for (let index = 0; index < files.length; index++) {
+        const file = files[index];
+        const isVideo = file.type.startsWith('video');
 
-      newMediaItems.push({
-        id: `media-${Date.now()}-${index}`,
-        url,
-        type: isVideo ? 'VIDEO' : 'IMAGE',
-        order: mediaList.length + index + 1,
-        isPrimary: isFirst,
+        // Envia para o backend para otimização Sharp (WebP) e armazenamento no Vercel Blob
+        let finalUrl = '';
+        try {
+          finalUrl = await uploadProductImage(file, prefix);
+        } catch (uploadErr: any) {
+          console.warn('Falha no upload para Vercel Blob, usando fallback temporário:', uploadErr);
+          finalUrl = URL.createObjectURL(file);
+        }
+
+        const isFirst = mediaList.length === 0 && index === 0;
+
+        newMediaItems.push({
+          id: `media-${Date.now()}-${index}`,
+          url: finalUrl,
+          type: isVideo ? 'VIDEO' : 'IMAGE',
+          order: mediaList.length + index + 1,
+          isPrimary: isFirst,
+        });
+      }
+
+      setMediaList((prev) => [...prev, ...newMediaItems]);
+    } catch (err: any) {
+      setModalConfig({
+        isOpen: true,
+        type: 'danger',
+        title: 'Erro no Upload',
+        message: err.message || 'Falha ao processar e enviar as imagens para o Vercel Blob.',
+        confirmText: 'Fechar',
+        onConfirm: closeModal,
       });
-    });
-
-    setMediaList((prev) => [...prev, ...newMediaItems]);
+    } finally {
+      setIsUploadingMedia(false);
+      e.target.value = '';
+    }
   };
 
   const handleAddVideoUrl = () => {
@@ -694,15 +723,30 @@ function ProductForm() {
             multiple
             accept="image/*,video/*"
             onChange={handleFileUpload}
+            disabled={isUploadingMedia}
             style={{ display: 'none' }}
           />
-          <UploadCloud size={40} className={styles.dropzoneIcon} />
-          <div className={styles.dropzoneText}>
-            Clique aqui ou arraste fotos e vídeos do modelo
-          </div>
-          <div className={styles.dropzoneSubtext}>
-            Formatos suportados: JPG, PNG, WebP e vídeos MP4 (Visão frontal, 45º e perfil)
-          </div>
+          {isUploadingMedia ? (
+            <>
+              <Loader2 size={40} className="animate-spin" color="var(--color-primary-500)" />
+              <div className={styles.dropzoneText}>
+                Otimizando e enviando para o Vercel Blob...
+              </div>
+              <div className={styles.dropzoneSubtext}>
+                Convertendo para WebP 600x600px e salvando no armazenamento de alta performance
+              </div>
+            </>
+          ) : (
+            <>
+              <UploadCloud size={40} className={styles.dropzoneIcon} />
+              <div className={styles.dropzoneText}>
+                Clique aqui ou arraste fotos e vídeos do modelo
+              </div>
+              <div className={styles.dropzoneSubtext}>
+                Formatos suportados: JPG, PNG, WebP e vídeos MP4 (Visão frontal, 45º e perfil)
+              </div>
+            </>
+          )}
         </label>
 
         {/* Video URL Input */}

@@ -872,3 +872,4 @@ export const salvarCategoria = saveCategory;
 export const excluirCategoria = deleteCategory;
 export const salvarSubcategoria = saveSubcategory;
 export const excluirSubcategoria = deleteSubcategory;
+export const uploadProductImage = uploadMediaAdmin;
