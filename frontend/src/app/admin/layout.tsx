@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard,
   Glasses,
@@ -13,8 +13,13 @@ import {
   Menu,
   X,
   LogOut,
-  ShieldCheck,
+  Loader2,
 } from 'lucide-react';
+import {
+  isAdminAuthenticated,
+  logoutAdmin,
+  getAdminUser,
+} from '../../services/auth.service';
 import styles from './adminLayout.module.css';
 
 export default function AdminLayout({
@@ -23,7 +28,59 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isAuthChecked, setIsAuthChecked] = useState(false);
+  const [adminUser, setAdminUser] = useState<{ nome: string; email: string } | null>(null);
+
+  const isLoginPage = pathname === '/admin';
+
+  useEffect(() => {
+    // Se for a página de login (/admin), não precisa checar permissão no layout
+    if (isLoginPage) {
+      setIsAuthChecked(true);
+      return;
+    }
+
+    // Para todas as outras rotas administrativas (/admin/*), valida login
+    if (!isAdminAuthenticated()) {
+      router.replace('/admin');
+    } else {
+      setAdminUser(getAdminUser());
+      setIsAuthChecked(true);
+    }
+  }, [pathname, isLoginPage, router]);
+
+  // Se estiver na tela de login (/admin), renderiza diretamente o conteúdo sem sidebar
+  if (isLoginPage) {
+    return <>{children}</>;
+  }
+
+  // Enquanto valida autenticação
+  if (!isAuthChecked) {
+    return (
+      <div
+        style={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: '#0b0f17',
+          color: '#94a3b8',
+          gap: '0.75rem',
+        }}
+      >
+        <Loader2 size={24} style={{ animation: 'spin 1s linear infinite' }} />
+        <span>Carregando painel administrativo...</span>
+      </div>
+    );
+  }
+
+  const handleLogout = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    await logoutAdmin();
+    router.replace('/admin');
+  };
 
   const navLinks = [
     {
@@ -58,7 +115,7 @@ export default function AdminLayout({
     if (pathname.includes('/admin/produtos/novo')) return 'Cadastrar Produto';
     if (pathname.includes('/admin/produtos')) return 'Catálogo de Produtos';
     if (pathname.includes('/admin/categorias')) return 'Gestão de Categorias';
-    if (pathname.includes('/admin/banners')) return 'Gestão de Banners ';
+    if (pathname.includes('/admin/banners')) return 'Gestão de Banners';
     return 'Painel Administrativo';
   };
 
@@ -109,8 +166,9 @@ export default function AdminLayout({
                 key={item.href}
                 href={item.href}
                 onClick={() => setSidebarOpen(false)}
-                className={`${styles.navItem} ${isActive ? styles.navItemActive : ''
-                  }`}
+                className={`${styles.navItem} ${
+                  isActive ? styles.navItemActive : ''
+                }`}
               >
                 {item.icon}
                 <span>{item.label}</span>
@@ -136,18 +194,34 @@ export default function AdminLayout({
           <div className={styles.userBadge}>
             <div className={styles.avatar}>TS</div>
             <div className={styles.userInfo}>
-              <span className={styles.userName}>Administrador</span>
-              <span className={styles.userRole}>admin@tseyewear.com.br</span>
+              <span className={styles.userName}>
+                {adminUser?.nome || 'Administrador'}
+              </span>
+              <span className={styles.userRole}>
+                {adminUser?.email || 'admin@tseyewear.com.br'}
+              </span>
             </div>
           </div>
-          <Link
-            href="/"
+          <button
+            type="button"
+            onClick={handleLogout}
             className={styles.navItem}
-            style={{ color: '#ef4444', padding: '0.4rem 0' }}
+            style={{
+              color: '#ef4444',
+              padding: '0.5rem 0',
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              font: 'inherit',
+            }}
           >
             <LogOut size={16} />
             <span>Sair do Painel</span>
-          </Link>
+          </button>
         </div>
       </aside>
 

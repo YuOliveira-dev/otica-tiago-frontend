@@ -5,12 +5,14 @@ import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { Heart, Search, Menu, X, ShieldCheck, Truck, ChevronRight } from 'lucide-react';
 import { generateWhatsAppLink } from '../../services/whatsapp';
+import { isAdminAuthenticated } from '../../services/auth.service';
 import styles from './Header.module.css';
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [totalFavorites, setTotalFavorites] = useState(0);
+  const [isAdmin, setIsAdmin] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -34,9 +36,17 @@ export function Header() {
     window.addEventListener('wishlist:updated', updateFavorites);
     window.addEventListener('storage', updateFavorites);
 
+    // Listen to admin authentication status
+    const updateAdminStatus = () => {
+      setIsAdmin(isAdminAuthenticated());
+    };
+    updateAdminStatus();
+    window.addEventListener('admin:auth-changed', updateAdminStatus);
+
     return () => {
       window.removeEventListener('wishlist:updated', updateFavorites);
       window.removeEventListener('storage', updateFavorites);
+      window.removeEventListener('admin:auth-changed', updateAdminStatus);
     };
   }, []);
 
@@ -155,15 +165,17 @@ export function Header() {
               )}
             </Link>
 
-            {/* Admin Dashboard Link */}
-            <Link
-              href="/admin/dashboard"
-              className={styles.adminBtn}
-              title="Acessar Painel Administrativo"
-            >
-              <ShieldCheck size={16} />
-              <span>Painel Admin</span>
-            </Link>
+            {/* Admin Dashboard Link - Exibido apenas se o administrador estiver autenticado */}
+            {isAdmin && (
+              <Link
+                href="/admin/dashboard"
+                className={styles.adminBtn}
+                title="Acessar Painel Administrativo"
+              >
+                <ShieldCheck size={16} />
+                <span>Painel Admin</span>
+              </Link>
+            )}
 
             {/* Hamburger Mobile Button */}
             <button
@@ -266,15 +278,18 @@ export function Header() {
                   <span>Quem Somos (5 Anos)</span>
                   <ChevronRight size={18} />
                 </Link>
-                <Link
-                  href="/admin/dashboard"
-                  className={styles.drawerLink}
-                  onClick={() => setIsMenuOpen(false)}
-                  style={{ color: 'var(--color-primary-500)' }}
-                >
-                  <span>Acessar Painel Admin</span>
-                  <ChevronRight size={18} />
-                </Link>
+                {/* Link do Painel Admin no menu mobile - Somente se logado */}
+                {isAdmin && (
+                  <Link
+                    href="/admin/dashboard"
+                    className={styles.drawerLink}
+                    onClick={() => setIsMenuOpen(false)}
+                    style={{ color: 'var(--color-primary-500)' }}
+                  >
+                    <span>Acessar Painel Admin</span>
+                    <ChevronRight size={18} />
+                  </Link>
+                )}
               </nav>
             </div>
 

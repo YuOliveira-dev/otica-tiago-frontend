@@ -5,17 +5,165 @@ import {
   DashboardMetrics,
   ProductStatus,
   Subcategory,
+  ProductMedia,
+  ProductVariation,
 } from '../types';
 import { MOCK_PRODUCTS, MOCK_CATEGORIES } from '../data/produtos';
 
-// In-memory catalog state for the client-side (prepared to swap for Express REST endpoints)
+const getApiBaseUrl = () => {
+  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+};
+
+const getAuthHeaders = () => {
+  const token =
+    typeof window !== 'undefined'
+      ? localStorage.getItem('ts_eyewear_admin_token')
+      : null;
+  return {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+};
+
+// In-memory fallback cache
 let productsState: Product[] = [...MOCK_PRODUCTS];
 let categoriesState: Category[] = [...MOCK_CATEGORIES];
 
 /**
- * Returns all active products applying optional filters and sorting
+ * Normaliza os produtos retornados pelo backend Express/Prisma para o formato do frontend
  */
-export async function getProducts(filters?: Partial<FiltersState>): Promise<Product[]> {
+export function mapBackendProductToFrontend(p: any): Product {
+  const variations: ProductVariation[] = (p.variacoes || p.variations || []).map(
+    (v: any) => ({
+      id: v.id,
+      skuVariation: v.skuVariacao || v.skuVariation || '',
+      skuVariacao: v.skuVariacao || v.skuVariation || '',
+      colorName: v.corNome || v.colorName || 'Padrão',
+      corNome: v.corNome || v.colorName || 'Padrão',
+      colorHex: v.corHex || v.colorHex || '#000000',
+      corHex: v.corHex || v.colorHex || '#000000',
+      lensWidthMm: v.aroMm ?? v.lensWidthMm ?? 52,
+      aroMm: v.aroMm ?? v.lensWidthMm ?? 52,
+      bridgeMm: v.ponteMm ?? v.bridgeMm ?? 19,
+      ponteMm: v.ponteMm ?? v.bridgeMm ?? 19,
+      templeMm: v.hasteMm ?? v.templeMm ?? 142,
+      hasteMm: v.hasteMm ?? v.templeMm ?? 142,
+      material: v.material || 'Acetato',
+      stock: v.estoqueAtual ?? v.stock ?? 0,
+      estoqueAtual: v.estoqueAtual ?? v.stock ?? 0,
+      customPrice: v.precoDiferenciado ? Number(v.precoDiferenciado) : undefined,
+      precoDiferenciado: v.precoDiferenciado ? Number(v.precoDiferenciado) : undefined,
+      isActive: v.statusAtivo ?? v.isActive ?? true,
+      statusAtivo: v.statusAtivo ?? v.isActive ?? true,
+    })
+  );
+
+  const media: ProductMedia[] = (p.midias || p.media || []).map(
+    (m: any, idx: number) => ({
+      id: m.id || `m-${idx}`,
+      url: m.url,
+      type: m.tipo === 'VIDEO' || m.type === 'VIDEO' ? 'VIDEO' : 'IMAGE',
+      tipo: m.tipo === 'VIDEO' || m.type === 'VIDEO' ? 'VIDEO' : 'IMAGE',
+      order: m.ordem ?? m.order ?? idx + 1,
+      ordem: m.ordem ?? m.order ?? idx + 1,
+      isPrimary: Boolean(m.principal ?? m.isPrimary ?? idx === 0),
+      principal: Boolean(m.principal ?? m.isPrimary ?? idx === 0),
+    })
+  );
+
+  return {
+    id: p.id,
+    parentSku: p.skuPai || p.parentSku || '',
+    skuPai: p.skuPai || p.parentSku || '',
+    title: p.titulo || p.title || '',
+    titulo: p.titulo || p.title || '',
+    slug: p.slug || '',
+    description: p.descricao || p.description || '',
+    descricao: p.descricao || p.description || '',
+    price: Number(p.precoVenda || p.price || 0),
+    precoVenda: Number(p.precoVenda || p.price || 0),
+    promotionalPrice: p.precoPromocional
+      ? Number(p.precoPromocional)
+      : p.promotionalPrice
+      ? Number(p.promotionalPrice)
+      : undefined,
+    precoPromocional: p.precoPromocional
+      ? Number(p.precoPromocional)
+      : p.promotionalPrice
+      ? Number(p.promotionalPrice)
+      : undefined,
+    featuredHome: Boolean(p.destaqueHome ?? p.featuredHome),
+    destaqueHome: Boolean(p.destaqueHome ?? p.featuredHome),
+    isNew: Boolean(p.novidade ?? p.isNew),
+    novidade: Boolean(p.novidade ?? p.isNew),
+    isOutlet: Boolean(p.outlet ?? p.isOutlet),
+    outlet: Boolean(p.outlet ?? p.isOutlet),
+    status: p.status || 'ATIVO',
+    categoryId: p.categoriaId || p.categoryId || '',
+    categoriaId: p.categoriaId || p.categoryId || '',
+    categoryName: p.categoria?.nome || p.categoriaNome || p.categoryName || '',
+    categoriaNome: p.categoria?.nome || p.categoriaNome || p.categoryName || '',
+    subcategoryId: p.subcategoriaId || p.subcategoryId,
+    subcategoriaId: p.subcategoriaId || p.subcategoryId,
+    subcategoryName: p.subcategoria?.nome || p.subcategoriaNome || p.subcategoryName,
+    subcategoriaNome: p.subcategoria?.nome || p.subcategoriaNome || p.subcategoryName,
+    shape: p.formato || p.shape || 'Redondo',
+    gender: p.genero || p.gender || 'unissex',
+    variations,
+    variacoes: variations,
+    media,
+    midias: media,
+  };
+}
+
+/**
+ * Retorna todos os produtos ativos aplicando filtros e ordenação
+ */
+export async function getProducts(
+  filters?: Partial<FiltersState>
+): Promise<Product[]> {
+  try {
+    const baseUrl = getApiBaseUrl();
+    const params = new URLSearchParams();
+
+    if (filters?.search || filters?.busca) {
+      params.set('busca', (filters.search || filters.busca)!);
+    }
+    if (filters?.category || filters?.categoria) {
+      params.set('categoria', (filters.category || filters.categoria)!);
+    }
+    if (filters?.gender || filters?.genero) {
+      params.set('genero', (filters.gender || filters.genero)!);
+    }
+    if (filters?.shape || filters?.formato) {
+      params.set('formato', (filters.shape || filters.formato)!);
+    }
+    if (filters?.material) {
+      params.set('material', filters.material);
+    }
+    if (filters?.inStockOnly || filters?.apenasEmEstoque) {
+      params.set('apenasEmEstoque', 'true');
+    }
+    if (filters?.sortBy || filters?.ordenar) {
+      params.set('ordenar', (filters.sortBy || filters.ordenar)!);
+    }
+
+    const qs = params.toString();
+    const res = await fetch(`${baseUrl}/produtos${qs ? `?${qs}` : ''}`, {
+      next: { revalidate: 10 },
+    });
+
+    if (res.ok) {
+      const json = await res.json();
+      if (json.sucesso && Array.isArray(json.dados) && json.dados.length > 0) {
+        return json.dados.map(mapBackendProductToFrontend);
+      }
+    }
+  } catch (err) {
+    console.warn('API pública indisponível, usando catálogo mock:', err);
+  }
+
+  // Fallback em memória
   let result = productsState.filter(
     (p) => p.status === 'ACTIVE' || p.status === 'ATIVO'
   );
@@ -30,7 +178,6 @@ export async function getProducts(filters?: Partial<FiltersState>): Promise<Prod
   const inStockOnly = filters.inStockOnly || filters.apenasEmEstoque;
   const sortBy = filters.sortBy || filters.ordenar;
 
-  // Text search in title, SKU, description and category
   if (searchQuery && searchQuery.trim() !== '') {
     const term = searchQuery.toLowerCase().trim();
     result = result.filter(
@@ -46,7 +193,6 @@ export async function getProducts(filters?: Partial<FiltersState>): Promise<Prod
     );
   }
 
-  // Category filter
   if (categoryFilter && categoryFilter !== 'todas' && categoryFilter !== 'all') {
     const term = categoryFilter.toLowerCase();
     result = result.filter(
@@ -58,7 +204,6 @@ export async function getProducts(filters?: Partial<FiltersState>): Promise<Prod
     );
   }
 
-  // Gender filter
   if (genderFilter && genderFilter !== 'todos' && genderFilter !== 'all') {
     result = result.filter((p) => {
       const g = p.gender || p.genero;
@@ -66,7 +211,6 @@ export async function getProducts(filters?: Partial<FiltersState>): Promise<Prod
     });
   }
 
-  // Shape filter
   if (shapeFilter && shapeFilter !== 'todos' && shapeFilter !== 'all') {
     const term = shapeFilter.toLowerCase();
     result = result.filter((p) => {
@@ -75,7 +219,6 @@ export async function getProducts(filters?: Partial<FiltersState>): Promise<Prod
     });
   }
 
-  // Material filter
   if (materialFilter && materialFilter !== 'todos' && materialFilter !== 'all') {
     const term = materialFilter.toLowerCase();
     result = result.filter((p) => {
@@ -84,7 +227,6 @@ export async function getProducts(filters?: Partial<FiltersState>): Promise<Prod
     });
   }
 
-  // Stock filter
   if (inStockOnly) {
     result = result.filter((p) => {
       const vars = p.variations || p.variacoes || [];
@@ -92,22 +234,25 @@ export async function getProducts(filters?: Partial<FiltersState>): Promise<Prod
     });
   }
 
-  // Sorting
   if (sortBy) {
     switch (sortBy) {
       case 'price_asc':
       case 'menor_preco':
         result.sort((a, b) => {
-          const priceA = a.promotionalPrice || a.precoPromocional || a.price || a.precoVenda || 0;
-          const priceB = b.promotionalPrice || b.precoPromocional || b.price || b.precoVenda || 0;
+          const priceA =
+            a.promotionalPrice || a.precoPromocional || a.price || a.precoVenda || 0;
+          const priceB =
+            b.promotionalPrice || b.precoPromocional || b.price || b.precoVenda || 0;
           return priceA - priceB;
         });
         break;
       case 'price_desc':
       case 'maior_preco':
         result.sort((a, b) => {
-          const priceA = a.promotionalPrice || a.precoPromocional || a.price || a.precoVenda || 0;
-          const priceB = b.promotionalPrice || b.precoPromocional || b.price || b.precoVenda || 0;
+          const priceA =
+            a.promotionalPrice || a.precoPromocional || a.price || a.precoVenda || 0;
+          const priceB =
+            b.promotionalPrice || b.precoPromocional || b.price || b.precoVenda || 0;
           return priceB - priceA;
         });
         break;
@@ -120,7 +265,6 @@ export async function getProducts(filters?: Partial<FiltersState>): Promise<Prod
         });
         break;
       default:
-        // Popular / Featured
         result.sort((a, b) => {
           const featA = a.featuredHome || a.destaqueHome ? 1 : 0;
           const featB = b.featuredHome || b.destaqueHome ? 1 : 0;
@@ -134,10 +278,24 @@ export async function getProducts(filters?: Partial<FiltersState>): Promise<Prod
 }
 
 /**
- * Returns a single product by ID, SKU or slug
+ * Retorna um único produto por ID, SKU ou slug
  */
 export async function getProductById(id?: string): Promise<Product | null> {
   if (!id) return null;
+
+  try {
+    const baseUrl = getApiBaseUrl();
+    const res = await fetch(`${baseUrl}/produtos/${id}`, { cache: 'no-store' });
+    if (res.ok) {
+      const json = await res.json();
+      if (json.sucesso && json.dados) {
+        return mapBackendProductToFrontend(json.dados);
+      }
+    }
+  } catch (err) {
+    // Silently fallback to mock
+  }
+
   const term = id.toLowerCase();
   const product = productsState.find(
     (p) =>
@@ -150,27 +308,38 @@ export async function getProductById(id?: string): Promise<Product | null> {
 }
 
 /**
- * Returns featured products for the Home showcase
+ * Produtos em destaque na Home
  */
 export async function getFeaturedProducts(): Promise<Product[]> {
-  return productsState.filter(
-    (p) => (p.status === 'ACTIVE' || p.status === 'ATIVO') && (p.featuredHome || p.destaqueHome)
-  );
+  const all = await getProducts();
+  return all.filter((p) => p.featuredHome || p.destaqueHome);
 }
 
 /**
- * Returns newly arrived products
+ * Lançamentos recentes
  */
 export async function getNewArrivalProducts(): Promise<Product[]> {
-  return productsState.filter(
-    (p) => (p.status === 'ACTIVE' || p.status === 'ATIVO') && (p.isNew || p.novidade)
-  );
+  const all = await getProducts();
+  return all.filter((p) => p.isNew || p.novidade);
 }
 
 /**
- * Returns all system categories
+ * Retorna as categorias do sistema
  */
 export async function getCategories(): Promise<Category[]> {
+  try {
+    const baseUrl = getApiBaseUrl();
+    const res = await fetch(`${baseUrl}/categorias`, { next: { revalidate: 10 } });
+    if (res.ok) {
+      const json = await res.json();
+      if (json.sucesso && Array.isArray(json.dados) && json.dados.length > 0) {
+        categoriesState = json.dados;
+        return categoriesState;
+      }
+    }
+  } catch (err) {
+    console.warn('API de categorias indisponível, usando dados mock:', err);
+  }
   return categoriesState;
 }
 
@@ -179,24 +348,52 @@ export async function getCategories(): Promise<Category[]> {
    ========================================================================== */
 
 /**
- * Returns all products for the Admin table (including hidden/archived)
+ * Retorna todos os produtos para o painel administrativo (conectado ao backend)
  */
 export async function getAdminProducts(): Promise<Product[]> {
+  try {
+    const baseUrl = getApiBaseUrl();
+    const headers = getAuthHeaders();
+    const res = await fetch(`${baseUrl}/admin/produtos?limite=100`, {
+      headers,
+      credentials: 'include',
+      cache: 'no-store',
+    });
+
+    if (res.ok) {
+      const json = await res.json();
+      if (json.sucesso && Array.isArray(json.dados)) {
+        const mapped = json.dados.map(mapBackendProductToFrontend);
+        if (mapped.length > 0) {
+          productsState = mapped;
+          return mapped;
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('Falha ao carregar produtos da API admin:', err);
+  }
+
   return [...productsState];
 }
 
 /**
- * Computes consolidated KPIs for the Admin Dashboard
+ * Calcula os KPIs consolidados para o Dashboard
  */
 export async function getDashboardMetrics(): Promise<DashboardMetrics> {
-  const total = productsState.length;
-  const active = productsState.filter((p) => p.status === 'ACTIVE' || p.status === 'ATIVO').length;
-  const hidden = productsState.filter((p) => p.status === 'HIDDEN' || p.status === 'OCULTO').length;
+  const prods = await getAdminProducts();
+  const total = prods.length;
+  const active = prods.filter(
+    (p) => p.status === 'ACTIVE' || p.status === 'ATIVO'
+  ).length;
+  const hidden = prods.filter(
+    (p) => p.status === 'HIDDEN' || p.status === 'OCULTO'
+  ).length;
 
   let lowStock = 0;
   let outOfStock = 0;
 
-  for (const prod of productsState) {
+  for (const prod of prods) {
     const variations = prod.variations || prod.variacoes || [];
     const totalStock = variations.reduce(
       (acc, v) => acc + (v.stock ?? v.estoqueAtual ?? 0),
@@ -215,7 +412,6 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
     hiddenProducts: hidden,
     lowStock,
     outOfStock,
-    // Legacy aliases
     totalProdutos: total,
     produtosAtivos: active,
     produtosOcultos: hidden,
@@ -225,12 +421,41 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
 }
 
 /**
- * Toggles product visibility status (Active / Hidden / Archived)
+ * Alterna a visibilidade de um produto no banco de dados
  */
 export async function toggleProductVisibility(
   id: string,
   newStatus: ProductStatus
 ): Promise<boolean> {
+  const baseUrl = getApiBaseUrl();
+  const headers = getAuthHeaders();
+  const statusBackend =
+    newStatus === 'ACTIVE' || newStatus === 'ATIVO'
+      ? 'ATIVO'
+      : newStatus === 'ARCHIVED' || newStatus === 'ARQUIVADO'
+      ? 'ARQUIVADO'
+      : 'OCULTO';
+
+  try {
+    const res = await fetch(`${baseUrl}/admin/produtos/${id}/visibilidade`, {
+      method: 'PATCH',
+      headers,
+      credentials: 'include',
+      body: JSON.stringify({ status: statusBackend }),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      if (data.sucesso) {
+        const index = productsState.findIndex((p) => p.id === id);
+        if (index !== -1) productsState[index].status = newStatus;
+        return true;
+      }
+    }
+  } catch (err) {
+    console.warn('Falha ao alternar visibilidade via API:', err);
+  }
+
   const index = productsState.findIndex((p) => p.id === id);
   if (index === -1) return false;
   productsState[index] = { ...productsState[index], status: newStatus };
@@ -238,9 +463,86 @@ export async function toggleProductVisibility(
 }
 
 /**
- * Creates or updates a product in the catalog
+ * Salva ou atualiza um produto no backend conectado ao PostgreSQL
  */
 export async function saveAdminProduct(product: Product): Promise<Product> {
+  const baseUrl = getApiBaseUrl();
+  const headers = getAuthHeaders();
+
+  const payload = {
+    skuPai: product.parentSku || product.skuPai,
+    titulo: product.title || product.titulo,
+    slug: product.slug,
+    descricao: product.description || product.descricao || '',
+    precoVenda: Number(product.price || product.precoVenda),
+    precoPromocional:
+      product.promotionalPrice || product.precoPromocional
+        ? Number(product.promotionalPrice || product.precoPromocional)
+        : null,
+    destaqueHome: Boolean(product.featuredHome || product.destaqueHome),
+    novidade: Boolean(product.isNew || product.novidade),
+    outlet: Boolean(product.isOutlet || product.outlet),
+    status:
+      product.status === 'ACTIVE' || product.status === 'ATIVO'
+        ? 'ATIVO'
+        : product.status === 'ARCHIVED' || product.status === 'ARQUIVADO'
+        ? 'ARQUIVADO'
+        : 'OCULTO',
+    categoriaId: product.categoryId || product.categoriaId,
+    subcategoriaId: product.subcategoryId || product.subcategoriaId || null,
+    variacoes: (product.variations || product.variacoes || []).map((v) => ({
+      skuVariacao: v.skuVariation || v.skuVariacao,
+      corNome: v.colorName || v.corNome,
+      corHex: v.colorHex || v.corHex,
+      aroMm: v.lensWidthMm || v.aroMm || 52,
+      ponteMm: v.bridgeMm || v.ponteMm || 19,
+      hasteMm: v.templeMm || v.hasteMm || 142,
+      material: v.material,
+      estoqueAtual: v.stock ?? v.estoqueAtual ?? 0,
+      precoDiferenciado: v.customPrice ?? v.precoDiferenciado ?? null,
+      statusAtivo: v.isActive ?? v.statusAtivo ?? true,
+    })),
+    midias: (product.media || product.midias || []).map((m, idx) => ({
+      url: m.url,
+      tipo: m.type === 'VIDEO' ? 'VIDEO' : 'IMAGEM',
+      ordem: m.order ?? m.ordem ?? idx + 1,
+      principal: Boolean(m.isPrimary || m.principal),
+    })),
+  };
+
+  try {
+    const isEdit =
+      product.id && product.id.length > 10 && !product.id.startsWith('prod-');
+    const url = isEdit
+      ? `${baseUrl}/admin/produtos/${product.id}`
+      : `${baseUrl}/admin/produtos`;
+    const method = isEdit ? 'PUT' : 'POST';
+
+    const res = await fetch(url, {
+      method,
+      headers,
+      credentials: 'include',
+      body: JSON.stringify(payload),
+    });
+
+    const data = await res.json();
+    if (res.ok && data.sucesso && data.dados) {
+      const saved = mapBackendProductToFrontend(data.dados);
+      const idx = productsState.findIndex((p) => p.id === saved.id);
+      if (idx >= 0) productsState[idx] = saved;
+      else productsState.unshift(saved);
+      return saved;
+    } else if (!res.ok) {
+      throw new Error(data.erro || 'Falha ao salvar produto no banco de dados.');
+    }
+  } catch (err: any) {
+    console.warn('API indisponível, aplicando fallback local:', err);
+    if (err.message && !err.message.includes('fetch')) {
+      throw err;
+    }
+  }
+
+  // Fallback local caso a API esteja temporariamente offline
   const index = productsState.findIndex((p) => p.id === product.id);
   if (index >= 0) {
     productsState[index] = { ...product };
@@ -252,13 +554,72 @@ export async function saveAdminProduct(product: Product): Promise<Product> {
 }
 
 /**
- * Adjusts real-time stock for a specific variation
+ * Envia arquivo de imagem para o Vercel Blob através da API administrativa
+ */
+export async function uploadMediaAdmin(
+  file: File,
+  prefixo = 'produto'
+): Promise<string> {
+  const baseUrl = getApiBaseUrl();
+  const token =
+    typeof window !== 'undefined'
+      ? localStorage.getItem('ts_eyewear_admin_token')
+      : null;
+
+  const formData = new FormData();
+  formData.append('imagem', file);
+  formData.append('prefixo', prefixo);
+
+  const res = await fetch(`${baseUrl}/admin/midia/upload`, {
+    method: 'POST',
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    credentials: 'include',
+    body: formData,
+  });
+
+  const data = await res.json();
+  if (!res.ok || !data.sucesso) {
+    throw new Error(data.erro || 'Falha ao enviar imagem para o armazenamento.');
+  }
+
+  return data.dados.url;
+}
+
+/**
+ * Ajusta o estoque em tempo real de uma variação
  */
 export async function adjustVariationStock(
   productId: string,
   variationId: string,
   newStock: number
 ): Promise<boolean> {
+  const baseUrl = getApiBaseUrl();
+  const headers = getAuthHeaders();
+
+  try {
+    const res = await fetch(
+      `${baseUrl}/admin/produtos/variacoes/${variationId}/estoque`,
+      {
+        method: 'PATCH',
+        headers,
+        credentials: 'include',
+        body: JSON.stringify({
+          novoEstoque: Math.max(0, newStock),
+          motivo: 'Ajuste manual via Painel Administrativo',
+        }),
+      }
+    );
+
+    if (res.ok) {
+      const data = await res.json();
+      if (data.sucesso) return true;
+    }
+  } catch (err) {
+    console.warn('Falha ao atualizar estoque via API:', err);
+  }
+
   const prod = productsState.find((p) => p.id === productId);
   if (!prod) return false;
   const variations = prod.variations || prod.variacoes || [];
@@ -272,9 +633,45 @@ export async function adjustVariationStock(
 }
 
 /**
- * Creates or updates a category
+ * Cria ou atualiza uma categoria no backend
  */
 export async function saveCategory(category: Category): Promise<Category> {
+  const baseUrl = getApiBaseUrl();
+  const headers = getAuthHeaders();
+
+  try {
+    const isEdit = category.id && category.id.length > 10;
+    const url = isEdit
+      ? `${baseUrl}/admin/categorias/${category.id}`
+      : `${baseUrl}/admin/categorias`;
+    const method = isEdit ? 'PUT' : 'POST';
+
+    const res = await fetch(url, {
+      method,
+      headers,
+      credentials: 'include',
+      body: JSON.stringify({
+        nome: category.nome || category.name,
+        slug: category.slug,
+        ordem: category.ordem ?? category.order ?? 1,
+        ativo: category.ativo ?? category.isActive ?? true,
+      }),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      if (data.sucesso && data.dados) {
+        const saved = data.dados;
+        const index = categoriesState.findIndex((c) => c.id === saved.id);
+        if (index >= 0) categoriesState[index] = saved;
+        else categoriesState.push(saved);
+        return saved;
+      }
+    }
+  } catch (err) {
+    console.warn('Falha ao salvar categoria via API:', err);
+  }
+
   const index = categoriesState.findIndex((c) => c.id === category.id);
   if (index >= 0) {
     categoriesState[index] = { ...category };
@@ -286,9 +683,31 @@ export async function saveCategory(category: Category): Promise<Category> {
 }
 
 /**
- * Deletes a category
+ * Exclui uma categoria do banco
  */
 export async function deleteCategory(id: string): Promise<boolean> {
+  const baseUrl = getApiBaseUrl();
+  const headers = getAuthHeaders();
+
+  try {
+    const res = await fetch(`${baseUrl}/admin/categorias/${id}`, {
+      method: 'DELETE',
+      headers,
+      credentials: 'include',
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      if (data.sucesso) {
+        const index = categoriesState.findIndex((c) => c.id === id);
+        if (index !== -1) categoriesState.splice(index, 1);
+        return true;
+      }
+    }
+  } catch (err) {
+    console.warn('Falha ao excluir categoria via API:', err);
+  }
+
   const index = categoriesState.findIndex((c) => c.id === id);
   if (index === -1) return false;
   categoriesState.splice(index, 1);
@@ -296,12 +715,37 @@ export async function deleteCategory(id: string): Promise<boolean> {
 }
 
 /**
- * Creates or updates a subcategory inside a parent category
+ * Cria ou atualiza subcategoria
  */
 export async function saveSubcategory(
   categoryId: string,
   subcategory: Subcategory
 ): Promise<boolean> {
+  const baseUrl = getApiBaseUrl();
+  const headers = getAuthHeaders();
+
+  try {
+    const res = await fetch(
+      `${baseUrl}/admin/categorias/${categoryId}/subcategorias`,
+      {
+        method: 'POST',
+        headers,
+        credentials: 'include',
+        body: JSON.stringify({
+          nome: subcategory.nome || subcategory.name,
+          slug: subcategory.slug,
+        }),
+      }
+    );
+
+    if (res.ok) {
+      const data = await res.json();
+      if (data.sucesso) return true;
+    }
+  } catch (err) {
+    console.warn('Falha ao salvar subcategoria via API:', err);
+  }
+
   const cat = categoriesState.find((c) => c.id === categoryId);
   if (!cat) return false;
   if (!cat.subcategories) cat.subcategories = [];
@@ -315,12 +759,33 @@ export async function saveSubcategory(
 }
 
 /**
- * Deletes a subcategory
+ * Exclui uma subcategoria
  */
 export async function deleteSubcategory(
   categoryId: string,
   subcategoryId: string
 ): Promise<boolean> {
+  const baseUrl = getApiBaseUrl();
+  const headers = getAuthHeaders();
+
+  try {
+    const res = await fetch(
+      `${baseUrl}/admin/categorias/subcategorias/${subcategoryId}`,
+      {
+        method: 'DELETE',
+        headers,
+        credentials: 'include',
+      }
+    );
+
+    if (res.ok) {
+      const data = await res.json();
+      if (data.sucesso) return true;
+    }
+  } catch (err) {
+    console.warn('Falha ao excluir subcategoria via API:', err);
+  }
+
   const cat = categoriesState.find((c) => c.id === categoryId);
   if (!cat || !cat.subcategories) return false;
   cat.subcategories = cat.subcategories.filter((s) => s.id !== subcategoryId);

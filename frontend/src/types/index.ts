@@ -94,10 +94,12 @@ export interface Category {
   name: string;
   slug: string;
   order: number;
+  isActive?: boolean;
   subcategories?: Subcategory[];
   // Legacy aliases
   nome?: string;
   ordem?: number;
+  ativo?: boolean;
   subcategorias?: Subcategory[];
 }
 
