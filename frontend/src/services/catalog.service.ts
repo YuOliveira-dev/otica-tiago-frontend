@@ -28,13 +28,11 @@ const getAuthHeaders = () => {
   };
 };
 
-// In-memory fallback cache
 let productsState: Product[] = [...MOCK_PRODUCTS];
 let categoriesState: Category[] = [...MOCK_CATEGORIES];
 
 export function normalizeMediaUrl(url?: string): string {
   if (!url) return '';
-  // Se a URL contiver qualquer preview deployment da Vercel para a API de mídia, normaliza para o domínio de produção oficial
   if (url.includes('.vercel.app/api/midia/blob')) {
     return url.replace(
       /https:\/\/[^/]+\.vercel\.app\/api\/midia\/blob/,
@@ -44,9 +42,6 @@ export function normalizeMediaUrl(url?: string): string {
   return url;
 }
 
-/**
- * Normaliza os produtos retornados pelo backend Express/Prisma para o formato do frontend
- */
 export function mapBackendProductToFrontend(p: any): Product {
   const variations: ProductVariation[] = (p.variacoes || p.variations || []).map(
     (v: any) => ({
@@ -132,9 +127,6 @@ export function mapBackendProductToFrontend(p: any): Product {
   };
 }
 
-/**
- * Retorna todos os produtos ativos aplicando filtros e ordenação
- */
 export async function getProducts(
   filters?: Partial<FiltersState>
 ): Promise<Product[]> {
@@ -182,7 +174,6 @@ export async function getProducts(
     console.warn('API pública indisponível, usando catálogo mock:', err);
   }
 
-  // Fallback em memória
   let result = productsState.filter(
     (p) => p.status === 'ACTIVE' || p.status === 'ATIVO'
   );
@@ -296,9 +287,6 @@ export async function getProducts(
   return result;
 }
 
-/**
- * Retorna um único produto por ID, SKU ou slug
- */
 export async function getProductById(id?: string): Promise<Product | null> {
   if (!id) return null;
 
@@ -312,7 +300,6 @@ export async function getProductById(id?: string): Promise<Product | null> {
       }
     }
   } catch (err) {
-    // Silently fallback to mock
   }
 
   const term = id.toLowerCase();
@@ -326,25 +313,16 @@ export async function getProductById(id?: string): Promise<Product | null> {
   return product || null;
 }
 
-/**
- * Produtos em destaque na Home
- */
 export async function getFeaturedProducts(): Promise<Product[]> {
   const all = await getProducts();
   return all.filter((p) => p.featuredHome || p.destaqueHome);
 }
 
-/**
- * Lançamentos recentes
- */
 export async function getNewArrivalProducts(): Promise<Product[]> {
   const all = await getProducts();
   return all.filter((p) => p.isNew || p.novidade);
 }
 
-/**
- * Retorna as categorias do sistema
- */
 export async function getCategories(): Promise<Category[]> {
   try {
     const baseUrl = getApiBaseUrl();
@@ -362,13 +340,6 @@ export async function getCategories(): Promise<Category[]> {
   return categoriesState;
 }
 
-/* ==========================================================================
-   Admin Management Functions
-   ========================================================================== */
-
-/**
- * Retorna todos os produtos para o painel administrativo (conectado ao backend)
- */
 export async function getAdminProducts(): Promise<Product[]> {
   try {
     const baseUrl = getApiBaseUrl();
@@ -396,9 +367,6 @@ export async function getAdminProducts(): Promise<Product[]> {
   return [...productsState];
 }
 
-/**
- * Calcula os KPIs consolidados para o Dashboard
- */
 export async function getDashboardMetrics(): Promise<DashboardMetrics> {
   const prods = await getAdminProducts();
   const total = prods.length;
@@ -439,9 +407,6 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
   };
 }
 
-/**
- * Alterna a visibilidade de um produto no banco de dados
- */
 export async function toggleProductVisibility(
   id: string,
   newStatus: ProductStatus
@@ -476,9 +441,6 @@ export async function toggleProductVisibility(
   return false;
 }
 
-/**
- * Alterna se o produto aparece nos "Modelos Mais Desejados" da Home e/ou como "Lançamento"
- */
 export async function toggleProductHighlight(
   id: string,
   options: { destaqueHome?: boolean; novidade?: boolean }
@@ -508,9 +470,6 @@ export async function toggleProductHighlight(
   return null;
 }
 
-/**
- * Salva ou atualiza um produto no backend conectado ao PostgreSQL
- */
 export async function saveAdminProduct(product: Product): Promise<Product> {
   const baseUrl = getApiBaseUrl();
   const headers = getAuthHeaders();
@@ -581,9 +540,6 @@ export async function saveAdminProduct(product: Product): Promise<Product> {
   throw new Error(data.erro || 'Falha ao salvar produto no banco de dados.');
 }
 
-/**
- * Envia arquivo de imagem para o Vercel Blob através da API administrativa
- */
 export async function uploadMediaAdmin(
   file: File,
   prefixo = 'produto'
@@ -616,9 +572,6 @@ export async function uploadMediaAdmin(
   return data.dados.url;
 }
 
-/**
- * Ajusta o estoque em tempo real de uma variação
- */
 export async function adjustVariationStock(
   productId: string,
   variationId: string,
@@ -657,9 +610,6 @@ export async function adjustVariationStock(
   throw new Error(data.erro || 'Falha ao atualizar estoque da variação na API.');
 }
 
-/**
- * Cria ou atualiza uma categoria no backend
- */
 export async function saveCategory(category: Category): Promise<Category> {
   const baseUrl = getApiBaseUrl();
   const headers = getAuthHeaders();
@@ -693,9 +643,6 @@ export async function saveCategory(category: Category): Promise<Category> {
   throw new Error(data.erro || 'Falha ao salvar categoria no banco de dados.');
 }
 
-/**
- * Exclui uma categoria do banco
- */
 export async function deleteCategory(id: string): Promise<boolean> {
   const baseUrl = getApiBaseUrl();
   const headers = getAuthHeaders();
@@ -715,9 +662,6 @@ export async function deleteCategory(id: string): Promise<boolean> {
   throw new Error(data.erro || 'Falha ao excluir categoria no banco de dados.');
 }
 
-/**
- * Cria ou atualiza subcategoria
- */
 export async function saveSubcategory(
   categoryId: string,
   subcategory: Subcategory
@@ -745,9 +689,6 @@ export async function saveSubcategory(
   throw new Error(data.erro || 'Falha ao salvar subcategoria na API.');
 }
 
-/**
- * Exclui uma subcategoria
- */
 export async function deleteSubcategory(
   categoryId: string,
   subcategoryId: string
@@ -775,7 +716,6 @@ export async function deleteSubcategory(
   throw new Error(data.erro || 'Falha ao excluir subcategoria na API.');
 }
 
-// Backward compatibility exports
 export const getProdutos = getProducts;
 export const getProdutoById = getProductById;
 export const getProdutosDestaque = getFeaturedProducts;

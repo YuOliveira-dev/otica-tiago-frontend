@@ -10,7 +10,6 @@ export function WhatsAppFloat() {
   const [showTooltip, setShowTooltip] = useState(false);
 
   useEffect(() => {
-    // Show friendly tooltip after 4 seconds
     const timer = setTimeout(() => {
       setShowTooltip(true);
     }, 4000);

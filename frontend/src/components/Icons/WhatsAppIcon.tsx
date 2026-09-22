@@ -5,10 +5,6 @@ export interface WhatsAppIconProps extends React.SVGProps<SVGSVGElement> {
   color?: string;
 }
 
-/**
- * Ícone Vetorial Oficial da Marca WhatsApp
- * Exibe o balão de fala característico com o fone de telefone inclinado.
- */
 export function WhatsAppIcon({
   size = 20,
   color = 'currentColor',

@@ -3,7 +3,6 @@ export interface GenerateWhatsAppProduct {
   parentSku?: string;
   price?: number;
   color?: string;
-  // Legacy aliases
   titulo?: string;
   skuPai?: string;
   preco?: number;
@@ -14,7 +13,6 @@ export interface GenerateWhatsAppFavoriteItem {
   title?: string;
   parentSku?: string;
   price?: number;
-  // Legacy aliases
   titulo?: string;
   skuPai?: string;
   preco?: number;
@@ -25,17 +23,12 @@ export interface GenerateWhatsAppParams {
   product?: GenerateWhatsAppProduct;
   type?: 'purchase' | 'prescription' | 'inquiry' | 'favorites_list' | 'compra' | 'grau' | 'duvida' | 'lista_favoritos';
   favoriteProducts?: GenerateWhatsAppFavoriteItem[];
-  // Legacy aliases
   numero?: string;
   produto?: GenerateWhatsAppProduct;
   tipo?: 'purchase' | 'prescription' | 'inquiry' | 'favorites_list' | 'compra' | 'grau' | 'duvida' | 'lista_favoritos';
   produtosFavoritos?: GenerateWhatsAppFavoriteItem[];
 }
 
-/**
- * Official WhatsApp messaging utility for TS EYEWEAR.
- * Formats end-to-end encrypted links with pre-loaded contextual messages.
- */
 export function generateWhatsAppLink({
   phone,
   product,
@@ -89,6 +82,5 @@ export function generateWhatsAppLink({
   return `https://wa.me/55${cleanedPhone}?text=${encodeURIComponent(message)}`;
 }
 
-// Backward compatibility exports
 export const gerarLinkWhatsApp = generateWhatsAppLink;
 export type GerarWhatsAppParams = GenerateWhatsAppParams;

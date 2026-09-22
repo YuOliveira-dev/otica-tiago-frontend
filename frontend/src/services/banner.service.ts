@@ -67,9 +67,6 @@ function notifySubscribers() {
   }
 }
 
-/**
- * Retorna todos os banners cadastrados na API
- */
 export async function getBanners(): Promise<Banner[]> {
   const baseUrl = getApiBaseUrl();
   const token = getAdminToken();
@@ -95,9 +92,6 @@ export async function getBanners(): Promise<Banner[]> {
   return [];
 }
 
-/**
- * Retorna apenas banners ativos ordenados para exibição na vitrine
- */
 export async function getActiveBanners(): Promise<Banner[]> {
   const baseUrl = getApiBaseUrl();
 
@@ -120,17 +114,11 @@ export async function getActiveBanners(): Promise<Banner[]> {
   return [];
 }
 
-/**
- * Busca banner específico por ID
- */
 export async function getBannerById(id: string): Promise<Banner | null> {
   const all = await getBanners();
   return all.find((b) => b.id === id) || null;
 }
 
-/**
- * Cria ou atualiza um banner através da API administrativa
- */
 export async function saveBanner(banner: Banner): Promise<Banner> {
   const baseUrl = getApiBaseUrl();
   const headers = getAuthHeaders();
@@ -157,9 +145,6 @@ export async function saveBanner(banner: Banner): Promise<Banner> {
   throw new Error(data.erro || 'Falha ao salvar banner na API administrativa.');
 }
 
-/**
- * Exclui um banner através da API administrativa
- */
 export async function deleteBanner(id: string): Promise<boolean> {
   const baseUrl = getApiBaseUrl();
   const headers = getAuthHeaders();
@@ -179,9 +164,6 @@ export async function deleteBanner(id: string): Promise<boolean> {
   throw new Error(data.erro || 'Falha ao excluir banner na API administrativa.');
 }
 
-/**
- * Alterna status ativo de um banner através da API administrativa
- */
 export async function toggleBannerStatus(id: string): Promise<boolean> {
   const baseUrl = getApiBaseUrl();
   const headers = getAuthHeaders();

@@ -73,9 +73,6 @@ function notifySubscribers() {
   }
 }
 
-/**
- * Returns section configuration (eyebrow, title, description)
- */
 export async function getHomeCategorySectionConfig(): Promise<HomeCategorySectionConfig> {
   if (typeof window === 'undefined') {
     return INITIAL_CATEGORY_SECTION_CONFIG;
@@ -94,9 +91,6 @@ export async function getHomeCategorySectionConfig(): Promise<HomeCategorySectio
   }
 }
 
-/**
- * Saves section configuration (eyebrow, title, description)
- */
 export async function saveHomeCategorySectionConfig(
   config: HomeCategorySectionConfig
 ): Promise<HomeCategorySectionConfig> {
@@ -107,9 +101,6 @@ export async function saveHomeCategorySectionConfig(
   return config;
 }
 
-/**
- * Returns all category cards stored or defaults
- */
 export async function getHomeCategoryCards(): Promise<HomeCategoryCard[]> {
   if (typeof window === 'undefined') {
     return INITIAL_CATEGORY_CARDS;
@@ -129,18 +120,12 @@ export async function getHomeCategoryCards(): Promise<HomeCategoryCard[]> {
   }
 }
 
-/**
- * Returns only active category cards sorted by order
- */
 export async function getActiveHomeCategoryCards(): Promise<HomeCategoryCard[]> {
   const all = await getHomeCategoryCards();
   const active = all.filter((c) => c.isActive);
   return active.length > 0 ? active : INITIAL_CATEGORY_CARDS;
 }
 
-/**
- * Saves or updates a category card
- */
 export async function saveHomeCategoryCard(card: HomeCategoryCard): Promise<HomeCategoryCard> {
   const all = await getHomeCategoryCards();
   const index = all.findIndex((c) => c.id === card.id);
@@ -161,9 +146,6 @@ export async function saveHomeCategoryCard(card: HomeCategoryCard): Promise<Home
   return card;
 }
 
-/**
- * Deletes a category card by ID
- */
 export async function deleteHomeCategoryCard(id: string): Promise<boolean> {
   const all = await getHomeCategoryCards();
   const filtered = all.filter((c) => c.id !== id);
@@ -176,9 +158,6 @@ export async function deleteHomeCategoryCard(id: string): Promise<boolean> {
   return true;
 }
 
-/**
- * Toggles a category card's active status
- */
 export async function toggleHomeCategoryCardStatus(id: string): Promise<boolean> {
   const all = await getHomeCategoryCards();
   const card = all.find((c) => c.id === id);

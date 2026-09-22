@@ -1,14 +1,3 @@
-/**
- * Serviço de Autenticação Administrativa - TS EYEWEAR
- * 
- * Diretrizes de Segurança (OWASP):
- * 1. Tokens de acesso NUNCA são gravados no localStorage ou sessionStorage (mitigação contra XSS).
- * 2. Token e dados de sessão são mantidos estritamente em memória do serviço durante a navegação.
- * 3. A sessão persistente exclusiva é mantida pelo Cookie HttpOnly emitido e deletado pelo backend.
- * 4. A cada decisão ou navegação no site, o serviço valida a autenticidade da sessão diretamente
- *    contra o backend (/api/admin/auth/me). Não existem fallbacks ou dados mockados no código.
- */
-
 export interface AdminUser {
   id: string;
   nome: string;
@@ -23,21 +12,17 @@ export interface LoginResponse {
   erro?: string;
 }
 
-// Estado estritamente em memória (NÃO persistido em storage local)
 let inMemoryToken: string | null = null;
 let inMemoryAdmin: AdminUser | null = null;
 let verificationInFlight: Promise<boolean> | null = null;
 
-// Higienização de segurança: remove qualquer resquício legado no storage local do navegador
 if (typeof window !== 'undefined') {
   try {
     localStorage.removeItem('ts_eyewear_admin_token');
     localStorage.removeItem('ts_eyewear_admin_user');
     sessionStorage.removeItem('ts_eyewear_admin_token');
     sessionStorage.removeItem('ts_eyewear_admin_user');
-  } catch {
-    // Ignora restrições de sandbox
-  }
+  } catch {}
 }
 
 const getApiBaseUrl = () => {
@@ -49,9 +34,6 @@ const getApiBaseUrl = () => {
   return url;
 };
 
-/**
- * Notifica a aplicação sobre mudança no estado de autenticação
- */
 function notifyAuthChange(isAuthenticated: boolean) {
   if (typeof window !== 'undefined') {
     window.dispatchEvent(
@@ -62,10 +44,6 @@ function notifyAuthChange(isAuthenticated: boolean) {
   }
 }
 
-/**
- * Realiza login do administrador exclusivamente contra a API do backend.
- * Sem credenciais hardcoded e sem fallbacks mockados.
- */
 export async function loginAdmin(email: string, senha: string): Promise<LoginResponse> {
   const baseUrl = getApiBaseUrl();
 
@@ -93,7 +71,6 @@ export async function loginAdmin(email: string, senha: string): Promise<LoginRes
     throw new Error(data.erro || 'E-mail ou senha incorretos.');
   }
 
-  // Armazena sessão exclusivamente em memória
   inMemoryToken = data.token || null;
   inMemoryAdmin = data.admin || null;
   notifyAuthChange(true);
@@ -101,10 +78,6 @@ export async function loginAdmin(email: string, senha: string): Promise<LoginRes
   return data;
 }
 
-/**
- * Encerra a sessão do administrador:
- * Notifica o backend para deletar a sessão exclusiva no banco e limpa a memória local.
- */
 export async function logoutAdmin(): Promise<void> {
   const baseUrl = getApiBaseUrl();
 
@@ -136,34 +109,19 @@ export async function logoutAdmin(): Promise<void> {
   }
 }
 
-/**
- * Retorna se o administrador está com sessão ativa em memória
- */
 export function isAdminAuthenticated(): boolean {
   return !!(inMemoryToken && inMemoryAdmin);
 }
 
-/**
- * Retorna os dados do administrador logado a partir da memória
- */
 export function getAdminUser(): AdminUser | null {
   return inMemoryAdmin;
 }
 
-/**
- * Retorna o token JWT em memória (nunca de storage)
- */
 export function getAdminToken(): string | null {
   return inMemoryToken;
 }
 
-/**
- * Valida a sessão administrativa diretamente contra o backend (/admin/auth/me).
- * Bate o token/cookie com a sessão salva no banco de dados.
- * Não utiliza fallbacks - se a API recusar ou estiver offline, a sessão é considerada inválida.
- */
 export async function verifyAdminSession(force = false): Promise<boolean> {
-  // Deduplicação de requisições concorrentes
   if (verificationInFlight && !force) {
     return verificationInFlight;
   }
@@ -221,9 +179,7 @@ export async function verifyAdminSession(force = false): Promise<boolean> {
   return verifyPromise;
 }
 
-/**
- * Assegura sessão ativa válida antes de executar uma decisão ou mutação no site.
- */
 export async function ensureAdminSession(): Promise<boolean> {
   return verifyAdminSession(true);
 }
+
