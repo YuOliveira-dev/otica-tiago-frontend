@@ -116,15 +116,11 @@ export function Footer() {
           <div>
             <h4 className={styles.colTitle}>Formas de Pagamento</h4>
             <p style={{ fontSize: '0.8125rem', marginBottom: '8px' }}>
-              Até 10x sem juros no cartão de crédito ou desconto especial via PIX.
+              Pagamento à vista com desconto exclusivo via PIX ou transferência direta.
             </p>
             <div className={styles.paymentBadges}>
               <span className={styles.badgePill}>PIX à Vista</span>
-              <span className={styles.badgePill}>Visa</span>
-              <span className={styles.badgePill}>Mastercard</span>
-              <span className={styles.badgePill}>Elo</span>
-              <span className={styles.badgePill}>Hipercard</span>
-              <span className={styles.badgePill}>Amex</span>
+              <span className={styles.badgePill}>Transferência Bancária</span>
             </div>
             <div style={{ marginTop: '16px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.75rem', color: '#10B981' }}>
               <ShieldCheck size={16} />

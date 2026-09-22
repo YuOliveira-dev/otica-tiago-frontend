@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useSyncExternalStore } from 'react';
+import { useState, useEffect, useSyncExternalStore } from 'react';
 import { FileText, Truck, ShieldCheck, Ruler, Check, Heart } from 'lucide-react';
 import { WhatsAppIcon } from '../../../components/Icons';
 import { Product } from '../../../types';
@@ -10,7 +10,6 @@ import styles from './produto.module.css';
 
 export interface ProductDetailsClientProps {
   product?: Product;
-  // Legacy alias
   produto?: Product;
 }
 
@@ -45,6 +44,10 @@ export function ProductDetailsClient({ product, produto }: ProductDetailsClientP
   const [isMeasurementsModalOpen, setIsMeasurementsModalOpen] = useState(false);
   const [zipCode, setZipCode] = useState('');
   const [isShippingCalculated, setIsShippingCalculated] = useState(false);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [activeProduct?.id]);
 
   const rawWishlist = useSyncExternalStore(
     subscribeWishlist,
@@ -189,7 +192,7 @@ export function ProductDetailsClient({ product, produto }: ProductDetailsClientP
               <span className={styles.pixDiscount}>à vista no PIX</span>
             </div>
             <div className={styles.installmentText}>
-              ou em até <strong>10x de {(effectivePrice / 10).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong> sem juros no cartão
+              Pagamento seguro à vista via <strong>PIX</strong> com confirmação imediata
             </div>
           </div>
 

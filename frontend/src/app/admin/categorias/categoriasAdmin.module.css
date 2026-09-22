@@ -338,6 +338,10 @@
   }
   .categoryCard {
     padding: 1rem;
+    margin: 0 2px;
+  }
+  .catInfo {
+    padding: 0 4px;
   }
   .addSubRow {
     flex-direction: column;

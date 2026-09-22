@@ -46,6 +46,29 @@
   color: #FFFFFF;
 }
 
+.desktopText {
+  display: inline;
+}
+
+.mobileText {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .topbar {
+    font-size: 0.75rem;
+  }
+  .desktopText {
+    display: none;
+  }
+  .mobileText {
+    display: inline;
+  }
+  .topbarBadge {
+    display: none;
+  }
+}
+
 /* Header Principal */
 .header {
   position: sticky;

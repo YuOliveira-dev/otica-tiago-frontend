@@ -175,6 +175,7 @@ export function ProductCard({ product, produto }: ProductCardProps) {
       <div className={styles.imageArea}>
         <Link
           href={`/produto/${activeProduct.id}`}
+          scroll={true}
           className={styles.imageLink}
           aria-label={`Ver detalhes de ${productTitle}`}
         >
@@ -232,7 +233,7 @@ export function ProductCard({ product, produto }: ProductCardProps) {
         </div>
 
         {/* Title */}
-        <Link href={`/produto/${activeProduct.id}`} className={styles.titleLink}>
+        <Link href={`/produto/${activeProduct.id}`} scroll={true} className={styles.titleLink}>
           <h3 className={styles.title} title={productTitle}>
             {productTitle}
           </h3>
@@ -300,10 +301,7 @@ export function ProductCard({ product, produto }: ProductCardProps) {
           </div>
 
           <div className={styles.installments}>
-            ou <strong>10x de {(effectivePrice / 10).toLocaleString('pt-BR', {
-              style: 'currency',
-              currency: 'BRL',
-            })}</strong> no crédito
+            à vista no <strong>PIX</strong> com Frete Grátis Brasil
           </div>
         </div>
 

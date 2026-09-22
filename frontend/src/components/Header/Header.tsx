@@ -73,7 +73,8 @@ export function Header() {
           <div className={styles.topbarHighlight}>
             <span className={styles.topbarBadge}>Exclusivo</span>
             <Truck size={14} />
-            <span>Frete Grátis para todo o Brasil em todos os pedidos!</span>
+            <span className={styles.desktopText}>Frete Grátis para todo o Brasil em todos os pedidos!</span>
+            <span className={styles.mobileText}>Frete Grátis</span>
           </div>
           <div>
             <a
@@ -83,7 +84,8 @@ export function Header() {
               className={styles.topbarLink}
             >
               <WhatsAppIcon size={14} style={{ color: 'var(--color-whatsapp)' }} />
-              <span>Atendimento Consultivo via WhatsApp</span>
+              <span className={styles.desktopText}>Atendimento Consultivo via WhatsApp</span>
+              <span className={styles.mobileText}>Atendimento</span>
             </a>
           </div>
         </div>

@@ -246,22 +246,37 @@
   }
   .sectionHeader {
     margin-bottom: var(--space-6);
+    padding: 0 8px;
   }
   .sectionTitle {
     font-size: 1.5rem;
+    padding: 0 4px;
   }
   .sectionDesc {
     font-size: 0.875rem;
+    padding: 0 4px;
+    max-width: 95%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .categoriasGrid {
+    padding: 0 4px;
   }
   .categoriaCard {
     height: 180px;
-    padding: var(--space-4);
+    padding: var(--space-4) calc(var(--space-4) + 4px);
+    margin: 0 2px;
+  }
+  .categoriaContent {
+    padding: 0 4px;
   }
   .categoriaTitulo {
     font-size: 1.15rem;
+    padding: 0 2px;
   }
   .categoriaSub {
     font-size: 0.75rem;
+    padding: 0 2px;
   }
   .btnVerTodos {
     width: 100%;

@@ -158,6 +158,12 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   padding: var(--space-3) var(--space-4);
+  gap: var(--space-4);
+}
+
+.topBarInfo {
+  display: flex;
+  align-items: center;
 }
 
 .countLabel {
@@ -166,22 +172,29 @@
   font-weight: 500;
 }
 
-.btnMobileFilter {
+.topBarActions {
   display: flex;
   align-items: center;
+  gap: var(--space-3);
+}
+
+.btnMobileFilter {
+  display: none;
+  align-items: center;
+  justify-content: center;
   gap: var(--space-2);
   padding: 8px 16px;
   background-color: var(--color-primary-950);
   color: #FFFFFF;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all var(--transition-fast);
 }
 
-@media (min-width: 1024px) {
-  .btnMobileFilter {
-    display: none;
-  }
+.btnMobileFilter:hover {
+  background-color: var(--color-primary-800);
 }
 
 .sortBox {
@@ -191,8 +204,14 @@
   font-size: 0.875rem;
 }
 
+.sortLabel {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
 .sortSelect {
-  height: 36px;
+  height: 38px;
   padding: 0 var(--space-3);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
@@ -202,6 +221,130 @@
   font-weight: 600;
   outline: none;
   cursor: pointer;
+}
+
+@media (max-width: 1023px) {
+  .topBarControls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-3);
+    padding: var(--space-3);
+  }
+
+  .topBarInfo {
+    justify-content: flex-start;
+  }
+
+  .topBarActions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-2);
+    width: 100%;
+  }
+
+  .btnMobileFilter {
+    display: flex;
+    width: 100%;
+    height: 40px;
+  }
+
+  .sortBox {
+    width: 100%;
+  }
+
+  .sortLabel {
+    display: none;
+  }
+
+  .sortSelect {
+    width: 100%;
+    height: 40px;
+    border-radius: var(--radius-full);
+  }
+}
+
+/* Mobile Filter Drawer */
+.drawerOverlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 1100;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.drawerSheet {
+  width: 100%;
+  max-width: 380px;
+  height: 100%;
+  background-color: var(--color-bg-surface);
+  display: flex;
+  flex-direction: column;
+  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.2);
+  animation: slideDrawer 0.25s ease-out;
+}
+
+@keyframes slideDrawer {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.drawerHeader {
+  padding: var(--space-4) var(--space-5);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.drawerCloseBtn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background-color: var(--color-bg-body);
+  color: var(--color-text-title);
+  cursor: pointer;
+  border: 1px solid var(--color-border);
+}
+
+.drawerBody {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-5);
+}
+
+.drawerFooter {
+  padding: var(--space-4) var(--space-5);
+  border-top: 1px solid var(--color-border);
+  background-color: var(--color-bg-surface);
+}
+
+.btnApplyFilters {
+  width: 100%;
+  height: 44px;
+  background-color: var(--color-primary-950);
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: 0.875rem;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btnApplyFilters:hover {
+  background-color: var(--color-primary-800);
 }
 
 /* Grade de Produtos */

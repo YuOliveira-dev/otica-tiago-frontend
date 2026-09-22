@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { SlidersHorizontal, RotateCcw, ChevronRight, Search, Loader2 } from 'lucide-react';
+import { SlidersHorizontal, RotateCcw, ChevronRight, Search, Loader2, X } from 'lucide-react';
 import { WhatsAppIcon } from '../../components/Icons';
 import { ProductCard } from '../../components/CardProduto/CardProduto';
 import { getProducts, getCategories } from '../../services/catalog.service';
@@ -201,31 +201,36 @@ function CatalogoContent() {
         <section>
           {/* Top Bar Sorting & Mobile Trigger */}
           <div className={styles.topBarControls}>
-            <button
-              onClick={() => setIsFilterDrawerOpen(true)}
-              className={styles.btnMobileFilter}
-            >
-              <SlidersHorizontal size={16} />
-              <span>Filtrar Modelos</span>
-            </button>
+            <div className={styles.topBarInfo}>
+              <span className={styles.countLabel}>
+                Mostrando <strong>{products.length}</strong> modelo(s)
+              </span>
+            </div>
 
-            <span className={styles.countLabel}>
-              Mostrando <strong>{products.length}</strong> modelo(s)
-            </span>
-
-            <div className={styles.sortBox}>
-              <label htmlFor="ordenar-select">Ordenar:</label>
-              <select
-                id="ordenar-select"
-                value={filters.sortBy}
-                onChange={(e) => updateFilter('sortBy', e.target.value)}
-                className={styles.sortSelect}
+            <div className={styles.topBarActions}>
+              <button
+                type="button"
+                onClick={() => setIsFilterDrawerOpen(true)}
+                className={styles.btnMobileFilter}
               >
-                <option value="populares">Mais Populares</option>
-                <option value="novidades">Lançamentos</option>
-                <option value="menor_preco">Menor Preço</option>
-                <option value="maior_preco">Maior Preço</option>
-              </select>
+                <SlidersHorizontal size={16} />
+                <span>Filtrar</span>
+              </button>
+
+              <div className={styles.sortBox}>
+                <label htmlFor="ordenar-select" className={styles.sortLabel}>Ordenar:</label>
+                <select
+                  id="ordenar-select"
+                  value={filters.sortBy}
+                  onChange={(e) => updateFilter('sortBy', e.target.value)}
+                  className={styles.sortSelect}
+                >
+                  <option value="populares">Mais Populares</option>
+                  <option value="novidades">Lançamentos</option>
+                  <option value="menor_preco">Menor Preço</option>
+                  <option value="maior_preco">Maior Preço</option>
+                </select>
+              </div>
             </div>
           </div>
 
@@ -285,6 +290,130 @@ function CatalogoContent() {
           )}
         </section>
       </div>
+
+      {/* Mobile Filters Drawer */}
+      {isFilterDrawerOpen && (
+        <div className={styles.drawerOverlay} onClick={() => setIsFilterDrawerOpen(false)}>
+          <div className={styles.drawerSheet} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.drawerHeader}>
+              <div className={styles.filterTitle}>
+                <SlidersHorizontal size={18} />
+                <span>Filtros</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <button type="button" onClick={clearFilters} className={styles.btnClear}>
+                  Limpar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsFilterDrawerOpen(false)}
+                  className={styles.drawerCloseBtn}
+                  aria-label="Fechar filtros"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+            </div>
+
+            <div className={styles.drawerBody}>
+              <div className={styles.filterGroup}>
+                <label className={styles.groupLabel}>Buscar Modelo</label>
+                <input
+                  type="text"
+                  placeholder="Ex: Aviador, Acetato..."
+                  value={filters.search}
+                  onChange={(e) => updateFilter('search', e.target.value)}
+                  className={styles.selectInput}
+                />
+              </div>
+
+              <div className={styles.filterGroup}>
+                <label className={styles.groupLabel}>Categoria</label>
+                <select
+                  value={filters.category}
+                  onChange={(e) => updateFilter('category', e.target.value)}
+                  className={styles.selectInput}
+                >
+                  <option value="todas">Todas as Categorias</option>
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name || cat.nome}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className={styles.filterGroup}>
+                <label className={styles.groupLabel}>Gênero</label>
+                <select
+                  value={filters.gender}
+                  onChange={(e) => updateFilter('gender', e.target.value)}
+                  className={styles.selectInput}
+                >
+                  <option value="todos">Todos os Gêneros</option>
+                  <option value="feminino">Feminino</option>
+                  <option value="masculino">Masculino</option>
+                  <option value="unissex">Unissex</option>
+                </select>
+              </div>
+
+              <div className={styles.filterGroup}>
+                <label className={styles.groupLabel}>Formato</label>
+                <select
+                  value={filters.shape}
+                  onChange={(e) => updateFilter('shape', e.target.value)}
+                  className={styles.selectInput}
+                >
+                  <option value="todos">Todos os Formatos</option>
+                  <option value="redondo">Redondo</option>
+                  <option value="quadrado">Quadrado</option>
+                  <option value="aviador">Aviador</option>
+                  <option value="gatinho">Gatinho</option>
+                  <option value="retangular">Retangular</option>
+                  <option value="geometrico">Geométrico</option>
+                </select>
+              </div>
+
+              <div className={styles.filterGroup}>
+                <label className={styles.groupLabel}>Material</label>
+                <select
+                  value={filters.material}
+                  onChange={(e) => updateFilter('material', e.target.value)}
+                  className={styles.selectInput}
+                >
+                  <option value="todos">Todos os Materiais</option>
+                  <option value="acetato">Acetato Italiano</option>
+                  <option value="titanio">Titânio Leve</option>
+                  <option value="metal">Metal Galvanizado</option>
+                  <option value="tr90">TR90 Flexível</option>
+                </select>
+              </div>
+
+              <div className={styles.filterGroup}>
+                <label className={styles.checkboxLabel}>
+                  <input
+                    type="checkbox"
+                    checked={filters.inStockOnly}
+                    onChange={(e) => updateFilter('inStockOnly', e.target.checked)}
+                    className={styles.checkboxInput}
+                  />
+                  <span>Somente modelos em estoque</span>
+                </label>
+              </div>
+            </div>
+
+            <div className={styles.drawerFooter}>
+              <button
+                type="button"
+                onClick={() => setIsFilterDrawerOpen(false)}
+                className={styles.btnApplyFilters}
+              >
+                Ver {products.length} Modelo(s)
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
