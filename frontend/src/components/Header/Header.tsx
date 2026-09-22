@@ -4,8 +4,9 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { Heart, Search, Menu, X, ShieldCheck, Truck, ChevronRight } from 'lucide-react';
+import { WhatsAppIcon } from '../Icons';
 import { generateWhatsAppLink } from '../../services/whatsapp';
-import { isAdminAuthenticated } from '../../services/auth.service';
+import { verifyAdminSession } from '../../services/auth.service';
 import styles from './Header.module.css';
 
 export function Header() {
@@ -36,9 +37,13 @@ export function Header() {
     window.addEventListener('wishlist:updated', updateFavorites);
     window.addEventListener('storage', updateFavorites);
 
-    // Listen to admin authentication status
-    const updateAdminStatus = () => {
-      setIsAdmin(isAdminAuthenticated());
+    // Listen to admin authentication status via service
+    const updateAdminStatus = (e?: any) => {
+      if (e && typeof e.detail?.isAuthenticated === 'boolean') {
+        setIsAdmin(e.detail.isAuthenticated);
+      } else {
+        verifyAdminSession().then(setIsAdmin);
+      }
     };
     updateAdminStatus();
     window.addEventListener('admin:auth-changed', updateAdminStatus);
@@ -77,6 +82,7 @@ export function Header() {
               rel="noopener noreferrer"
               className={styles.topbarLink}
             >
+              <WhatsAppIcon size={14} style={{ color: 'var(--color-whatsapp)' }} />
               <span>Atendimento Consultivo via WhatsApp</span>
             </a>
           </div>
@@ -300,6 +306,7 @@ export function Header() {
                 rel="noopener noreferrer"
                 className={styles.btnWhatsAppMobile}
               >
+                <WhatsAppIcon size={18} />
                 <span>Falar no WhatsApp</span>
               </a>
             </div>

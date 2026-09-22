@@ -17,7 +17,6 @@ import {
   Sparkles,
 } from 'lucide-react';
 import {
-  isAdminAuthenticated,
   logoutAdmin,
   getAdminUser,
   verifyAdminSession,
@@ -44,20 +43,34 @@ export default function AdminLayout({
       return;
     }
 
-    // Para todas as outras rotas administrativas (/admin/*), valida login
-    if (!isAdminAuthenticated()) {
-      router.replace('/admin');
-    } else {
-      setAdminUser(getAdminUser());
-      setIsAuthChecked(true);
+    let isMounted = true;
 
-      // Validação proativa: se a chave JWT foi rotacionada no backend, limpa a sessão antiga e redireciona
-      verifyAdminSession().then((isValid) => {
-        if (!isValid) {
-          router.replace('/admin');
-        }
-      });
-    }
+    // A cada decisão/navegação no site, busca no service para bater com o token no backend
+    verifyAdminSession().then((isValid) => {
+      if (!isMounted) return;
+
+      if (!isValid) {
+        setIsAuthChecked(false);
+        router.replace('/admin');
+      } else {
+        setAdminUser(getAdminUser());
+        setIsAuthChecked(true);
+      }
+    });
+
+    const handleAuthChange = (e: any) => {
+      if (!e.detail?.isAuthenticated && isMounted) {
+        setIsAuthChecked(false);
+        router.replace('/admin');
+      }
+    };
+
+    window.addEventListener('admin:auth-changed', handleAuthChange);
+
+    return () => {
+      isMounted = false;
+      window.removeEventListener('admin:auth-changed', handleAuthChange);
+    };
   }, [pathname, isLoginPage, router]);
 
   // Se estiver na tela de login (/admin), renderiza diretamente o conteúdo sem sidebar
@@ -213,7 +226,7 @@ export default function AdminLayout({
                 {adminUser?.nome || 'Administrador'}
               </span>
               <span className={styles.userRole}>
-                {adminUser?.email || 'admin@tseyewear.com.br'}
+                {adminUser?.email || ''}
               </span>
             </div>
           </div>

@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useSyncExternalStore } from 'react';
-import { MessageCircle, FileText, Truck, ShieldCheck, Ruler, Check, Heart } from 'lucide-react';
+import { FileText, Truck, ShieldCheck, Ruler, Check, Heart } from 'lucide-react';
+import { WhatsAppIcon } from '../../../components/Icons';
 import { Product } from '../../../types';
 import { MeasurementsModal } from '../../../components/ModalMedidas/ModalMedidas';
 import { generateWhatsAppLink } from '../../../services/whatsapp';
@@ -291,7 +292,7 @@ export function ProductDetailsClient({ product, produto }: ProductDetailsClientP
               rel="noopener noreferrer"
               className={styles.btnComprarWhatsApp}
             >
-              <MessageCircle size={22} />
+              <WhatsAppIcon size={22} />
               <span>Comprar pelo WhatsApp</span>
             </a>
 
@@ -385,7 +386,7 @@ export function ProductDetailsClient({ product, produto }: ProductDetailsClientP
             fontSize: '0.875rem',
           }}
         >
-          <MessageCircle size={18} />
+          <WhatsAppIcon size={18} />
           <span>Comprar</span>
         </a>
       </div>

@@ -2,7 +2,8 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Heart, Trash2, MessageCircle, ArrowRight, Truck, ShieldCheck } from 'lucide-react';
+import { Heart, Trash2, ArrowRight, Truck, ShieldCheck } from 'lucide-react';
+import { WhatsAppIcon } from '../../components/Icons';
 import { ProductCard } from '../../components/CardProduto/CardProduto';
 import { getProducts } from '../../services/catalog.service';
 import { generateWhatsAppLink } from '../../services/whatsapp';
@@ -115,7 +116,7 @@ export default function FavoritosPage() {
               rel="noopener noreferrer"
               className={styles.btnWhatsAppAll}
             >
-              <MessageCircle size={18} />
+              <WhatsAppIcon size={18} />
               Pedir Orçamento da Lista ({products.length})
             </a>
           </div>

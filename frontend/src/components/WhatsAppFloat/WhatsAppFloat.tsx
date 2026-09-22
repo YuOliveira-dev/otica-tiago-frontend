@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { MessageCircle, X, Sparkles } from 'lucide-react';
+import { X, Sparkles } from 'lucide-react';
+import { WhatsAppIcon } from '../Icons';
 import { generateWhatsAppLink } from '../../services/whatsapp';
 import styles from './WhatsAppFloat.module.css';
 
@@ -50,7 +51,7 @@ export function WhatsAppFloat() {
         aria-label="Conversar com consultor no WhatsApp"
         title="Atendimento Consultivo TS EYEWEAR"
       >
-        <MessageCircle size={30} />
+        <WhatsAppIcon size={30} />
       </a>
     </div>
   );

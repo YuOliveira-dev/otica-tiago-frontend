@@ -13,7 +13,7 @@ import {
   Loader2,
   AlertCircle,
 } from 'lucide-react';
-import { loginAdmin, isAdminAuthenticated } from '../../services/auth.service';
+import { loginAdmin, verifyAdminSession } from '../../services/auth.service';
 import styles from './adminLogin.module.css';
 
 export default function AdminLoginPage() {
@@ -25,13 +25,21 @@ export default function AdminLoginPage() {
   const [errorMessage, setErrorMessage] = useState('');
   const [checkingAuth, setCheckingAuth] = useState(true);
 
-  // Se já estiver logado, redireciona diretamente ao Dashboard
+  // Se já possuir sessão válida confirmada pelo backend, redireciona ao Dashboard
   useEffect(() => {
-    if (isAdminAuthenticated()) {
-      router.replace('/admin/dashboard');
-    } else {
-      setCheckingAuth(false);
-    }
+    let isMounted = true;
+    verifyAdminSession().then((isValid) => {
+      if (!isMounted) return;
+      if (isValid) {
+        router.replace('/admin/dashboard');
+      } else {
+        setCheckingAuth(false);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
   }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -101,7 +109,7 @@ export default function AdminLoginPage() {
                 id="admin-email"
                 type="email"
                 className={styles.input}
-                placeholder="ex: admin@tseyewear.com.br"
+                placeholder="ex: seu-email@exemplo.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 autoComplete="email"

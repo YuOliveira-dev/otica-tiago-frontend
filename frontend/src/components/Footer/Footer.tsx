@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Glasses, Mail, Phone, Clock, ShieldCheck, Truck, RotateCcw } from 'lucide-react';
+import { WhatsAppIcon } from '../Icons';
 import styles from './Footer.module.css';
 
 function InstagramIcon({ size = 16 }: { size?: number }) {
@@ -53,7 +54,7 @@ export function Footer() {
             <h4 className={styles.colTitle}>Atendimento Online</h4>
             <div className={styles.contactInfo}>
               <div className={styles.contactRow}>
-                <Phone size={16} style={{ color: 'var(--color-whatsapp)', marginTop: '2px' }} />
+                <WhatsAppIcon size={18} style={{ color: 'var(--color-whatsapp)', marginTop: '2px' }} />
                 <div>
                   <strong>WhatsApp Oficial:</strong>
                   <div>(84) 99616-0968</div>

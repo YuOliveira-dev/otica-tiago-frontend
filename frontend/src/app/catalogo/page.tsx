@@ -3,7 +3,8 @@
 import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { SlidersHorizontal, RotateCcw, MessageCircle, ChevronRight, Search } from 'lucide-react';
+import { SlidersHorizontal, RotateCcw, ChevronRight, Search } from 'lucide-react';
+import { WhatsAppIcon } from '../../components/Icons';
 import { ProductCard } from '../../components/CardProduto/CardProduto';
 import { getProducts, getCategories } from '../../services/catalog.service';
 import { generateWhatsAppLink } from '../../services/whatsapp';
@@ -269,7 +270,7 @@ function CatalogoContent() {
                     gap: '8px',
                   }}
                 >
-                  <MessageCircle size={18} />
+                  <WhatsAppIcon size={18} />
                   <span>Consultar no WhatsApp</span>
                 </a>
               </div>

@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { ArrowRight, MessageCircle, Sparkles } from 'lucide-react';
+import { ArrowRight, Sparkles } from 'lucide-react';
+import { WhatsAppIcon } from '../components/Icons';
 import { HeroCarousel } from '../components/HeroCarousel/HeroCarousel';
 import { HomeCategorias } from '../components/HomeCategorias/HomeCategorias';
 import { ProductCard } from '../components/CardProduto/CardProduto';
@@ -80,7 +81,7 @@ export default async function HomePage() {
             rel="noopener noreferrer"
             className={styles.btnWhatsAppLargo}
           >
-            <MessageCircle size={22} />
+            <WhatsAppIcon size={22} />
             <span>Enviar Minha Receita no WhatsApp</span>
           </a>
         </section>

@@ -1,4 +1,5 @@
 import { Banner } from '../types';
+import { getAdminToken } from './auth.service';
 
 export const INITIAL_BANNERS: Banner[] = [
   {
@@ -43,7 +44,22 @@ export const INITIAL_BANNERS: Banner[] = [
   },
 ];
 
-const STORAGE_KEY = 'ts_eyewear_banners';
+const getApiBaseUrl = () => {
+  let url = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api').trim();
+  url = url.replace(/\/+$/, '');
+  if (!url.endsWith('/api')) {
+    url = `${url}/api`;
+  }
+  return url;
+};
+
+const getAuthHeaders = () => {
+  const token = getAdminToken();
+  return {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+};
 
 function notifySubscribers() {
   if (typeof window !== 'undefined') {
@@ -52,38 +68,60 @@ function notifySubscribers() {
 }
 
 /**
- * Returns all banners stored or defaults
+ * Retorna todos os banners cadastrados na API
  */
 export async function getBanners(): Promise<Banner[]> {
-  if (typeof window === 'undefined') {
-    return INITIAL_BANNERS;
-  }
+  const baseUrl = getApiBaseUrl();
+  const token = getAdminToken();
 
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_BANNERS));
-      return INITIAL_BANNERS;
+    const url = token ? `${baseUrl}/admin/banners` : `${baseUrl}/banners`;
+    const res = await fetch(url, {
+      headers: token ? getAuthHeaders() : { Accept: 'application/json' },
+      credentials: 'include',
+      cache: 'no-store',
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      if (data.sucesso && Array.isArray(data.dados)) {
+        return data.dados;
+      }
     }
-    const parsed: Banner[] = JSON.parse(raw);
-    return parsed.sort((a, b) => a.order - b.order);
   } catch (err) {
-    console.error('Erro ao ler banners do localStorage:', err);
-    return INITIAL_BANNERS;
+    console.warn('Falha ao buscar banners da API:', err);
   }
+
+  return [];
 }
 
 /**
- * Returns only active banners sorted by display order
+ * Retorna apenas banners ativos ordenados para exibição na vitrine
  */
 export async function getActiveBanners(): Promise<Banner[]> {
-  const all = await getBanners();
-  const active = all.filter((b) => b.isActive);
-  return active.length > 0 ? active : INITIAL_BANNERS;
+  const baseUrl = getApiBaseUrl();
+
+  try {
+    const res = await fetch(`${baseUrl}/banners`, {
+      headers: { Accept: 'application/json' },
+      cache: 'no-store',
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      if (data.sucesso && Array.isArray(data.dados)) {
+        return data.dados;
+      }
+    }
+  } catch (err) {
+    console.warn('Falha ao buscar banners ativos da vitrine:', err);
+  }
+
+  return [];
 }
 
 /**
- * Retrieves a banner by its ID
+ * Busca banner específico por ID
  */
 export async function getBannerById(id: string): Promise<Banner | null> {
   const all = await getBanners();
@@ -91,55 +129,74 @@ export async function getBannerById(id: string): Promise<Banner | null> {
 }
 
 /**
- * Creates or updates a banner
+ * Cria ou atualiza um banner através da API administrativa
  */
 export async function saveBanner(banner: Banner): Promise<Banner> {
-  const all = await getBanners();
-  const index = all.findIndex((b) => b.id === banner.id);
+  const baseUrl = getApiBaseUrl();
+  const headers = getAuthHeaders();
+  const isEdit = banner.id && !banner.id.startsWith('new-');
 
-  let updatedList: Banner[];
-  if (index >= 0) {
-    updatedList = [...all];
-    updatedList[index] = { ...banner };
-  } else {
-    updatedList = [...all, banner];
-  }
+  const url = isEdit
+    ? `${baseUrl}/admin/banners/${banner.id}`
+    : `${baseUrl}/admin/banners`;
+  const method = isEdit ? 'PUT' : 'POST';
 
-  if (typeof window !== 'undefined') {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
+  const res = await fetch(url, {
+    method,
+    headers,
+    credentials: 'include',
+    body: JSON.stringify(banner),
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (res.ok && data.sucesso && data.dados) {
     notifySubscribers();
+    return data.dados;
   }
 
-  return banner;
+  throw new Error(data.erro || 'Falha ao salvar banner na API administrativa.');
 }
 
 /**
- * Deletes a banner by its ID
+ * Exclui um banner através da API administrativa
  */
 export async function deleteBanner(id: string): Promise<boolean> {
-  const all = await getBanners();
-  const filtered = all.filter((b) => b.id !== id);
+  const baseUrl = getApiBaseUrl();
+  const headers = getAuthHeaders();
 
-  if (typeof window !== 'undefined') {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
+  const res = await fetch(`${baseUrl}/admin/banners/${id}`, {
+    method: 'DELETE',
+    headers,
+    credentials: 'include',
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (res.ok && data.sucesso) {
     notifySubscribers();
+    return true;
   }
 
-  return true;
+  throw new Error(data.erro || 'Falha ao excluir banner na API administrativa.');
 }
 
 /**
- * Toggles a banner's active status
+ * Alterna status ativo de um banner através da API administrativa
  */
 export async function toggleBannerStatus(id: string): Promise<boolean> {
-  const all = await getBanners();
-  const banner = all.find((b) => b.id === id);
-  if (!banner) return false;
+  const baseUrl = getApiBaseUrl();
+  const headers = getAuthHeaders();
 
-  banner.isActive = !banner.isActive;
-  if (typeof window !== 'undefined') {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
+  const res = await fetch(`${baseUrl}/admin/banners/${id}/status`, {
+    method: 'PATCH',
+    headers,
+    credentials: 'include',
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (res.ok && data.sucesso) {
     notifySubscribers();
+    return true;
   }
-  return true;
+
+  throw new Error(data.erro || 'Falha ao alternar status do banner na API.');
 }

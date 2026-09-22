@@ -1,10 +1,13 @@
 /**
  * Serviço de Autenticação Administrativa - TS EYEWEAR
- * Gerencia login, logout, persistência de sessão e eventos de autenticação
+ * 
+ * Diretrizes de Segurança (OWASP):
+ * 1. Tokens de acesso NUNCA são gravados no localStorage ou sessionStorage (mitigação contra XSS).
+ * 2. Token e dados de sessão são mantidos estritamente em memória do serviço durante a navegação.
+ * 3. A sessão persistente exclusiva é mantida pelo Cookie HttpOnly emitido e deletado pelo backend.
+ * 4. A cada decisão ou navegação no site, o serviço valida a autenticidade da sessão diretamente
+ *    contra o backend (/api/admin/auth/me). Não existem fallbacks ou dados mockados no código.
  */
-
-const AUTH_TOKEN_KEY = 'ts_eyewear_admin_token';
-const AUTH_USER_KEY = 'ts_eyewear_admin_user';
 
 export interface AdminUser {
   id: string;
@@ -20,6 +23,23 @@ export interface LoginResponse {
   erro?: string;
 }
 
+// Estado estritamente em memória (NÃO persistido em storage local)
+let inMemoryToken: string | null = null;
+let inMemoryAdmin: AdminUser | null = null;
+let verificationInFlight: Promise<boolean> | null = null;
+
+// Higienização de segurança: remove qualquer resquício legado no storage local do navegador
+if (typeof window !== 'undefined') {
+  try {
+    localStorage.removeItem('ts_eyewear_admin_token');
+    localStorage.removeItem('ts_eyewear_admin_user');
+    sessionStorage.removeItem('ts_eyewear_admin_token');
+    sessionStorage.removeItem('ts_eyewear_admin_user');
+  } catch {
+    // Ignora restrições de sandbox
+  }
+}
+
 const getApiBaseUrl = () => {
   let url = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api').trim();
   url = url.replace(/\/+$/, '');
@@ -30,177 +50,180 @@ const getApiBaseUrl = () => {
 };
 
 /**
- * Notifica a aplicação sobre mudança no estado de login
+ * Notifica a aplicação sobre mudança no estado de autenticação
  */
 function notifyAuthChange(isAuthenticated: boolean) {
   if (typeof window !== 'undefined') {
     window.dispatchEvent(
       new CustomEvent('admin:auth-changed', {
-        detail: { isAuthenticated },
+        detail: { isAuthenticated, admin: inMemoryAdmin },
       })
     );
   }
 }
 
 /**
- * Realiza login do administrador
+ * Realiza login do administrador exclusivamente contra a API do backend.
+ * Sem credenciais hardcoded e sem fallbacks mockados.
  */
 export async function loginAdmin(email: string, senha: string): Promise<LoginResponse> {
   const baseUrl = getApiBaseUrl();
 
-  try {
-    const res = await fetch(`${baseUrl}/admin/auth/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-      body: JSON.stringify({ email, senha }),
-    });
+  const res = await fetch(`${baseUrl}/admin/auth/login`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+    body: JSON.stringify({ email: email.trim(), senha }),
+  });
 
-    const contentType = res.headers.get('content-type') || '';
-    let data: any = {};
+  const contentType = res.headers.get('content-type') || '';
+  let data: any = {};
 
-    if (contentType.includes('application/json')) {
-      data = await res.json();
-    } else {
-      const text = await res.text();
-      console.error('Resposta não-JSON recebida da API:', text.slice(0, 300));
-      throw new Error(
-        'Falha na comunicação com o servidor. Verifique se a variável NEXT_PUBLIC_API_URL está apontando para o backend (https://otica-tiago-backend.vercel.app/api).'
-      );
-    }
-
-    if (!res.ok || !data.sucesso) {
-      throw new Error(data.erro || 'Credenciais de acesso incorretas.');
-    }
-
-    // Salva token e usuário no localStorage
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(AUTH_TOKEN_KEY, data.token || 'token_session');
-      if (data.admin) {
-        localStorage.setItem(AUTH_USER_KEY, JSON.stringify(data.admin));
-      }
-      notifyAuthChange(true);
-    }
-
-    return data;
-  } catch (err: any) {
-    // Se a API estiver offline (ex: servidor local desligado), valida com fallback seguro
-    const isNetworkError =
-      err.name === 'TypeError' ||
-      err.message?.includes('fetch') ||
-      err.message?.includes('Failed to fetch') ||
-      err.message?.includes('NetworkError');
-
-    if (isNetworkError) {
-      const emailNormalizado = email.toLowerCase().trim();
-      if (
-        emailNormalizado === 'admin@tseyewear.com.br' &&
-        senha === 'AdminTsEyewear2026!'
-      ) {
-        const fallbackAdmin: AdminUser = {
-          id: 'admin-local-1',
-          nome: 'Administrador TS EYEWEAR',
-          email: emailNormalizado,
-        };
-
-        if (typeof window !== 'undefined') {
-          localStorage.setItem(AUTH_TOKEN_KEY, 'ts_mock_admin_token_jwt');
-          localStorage.setItem(AUTH_USER_KEY, JSON.stringify(fallbackAdmin));
-          notifyAuthChange(true);
-        }
-
-        return {
-          sucesso: true,
-          mensagem: 'Login realizado em modo desenvolvimento local.',
-          token: 'ts_mock_admin_token_jwt',
-          admin: fallbackAdmin,
-        };
-      }
-      throw new Error('E-mail ou senha incorretos.');
-    }
-
-    throw err;
+  if (contentType.includes('application/json')) {
+    data = await res.json();
+  } else {
+    throw new Error(
+      'Falha na comunicação com o servidor de autenticação. Verifique se o backend está online.'
+    );
   }
+
+  if (!res.ok || !data.sucesso) {
+    throw new Error(data.erro || 'E-mail ou senha incorretos.');
+  }
+
+  // Armazena sessão exclusivamente em memória
+  inMemoryToken = data.token || null;
+  inMemoryAdmin = data.admin || null;
+  notifyAuthChange(true);
+
+  return data;
 }
 
 /**
- * Encerra a sessão do administrador
+ * Encerra a sessão do administrador:
+ * Notifica o backend para deletar a sessão exclusiva no banco e limpa a memória local.
  */
 export async function logoutAdmin(): Promise<void> {
   const baseUrl = getApiBaseUrl();
 
   try {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    if (inMemoryToken) {
+      headers['Authorization'] = `Bearer ${inMemoryToken}`;
+    }
+
     await fetch(`${baseUrl}/admin/auth/logout`, {
       method: 'POST',
+      headers,
       credentials: 'include',
     }).catch(() => {});
   } finally {
+    inMemoryToken = null;
+    inMemoryAdmin = null;
+    verificationInFlight = null;
+
     if (typeof window !== 'undefined') {
-      localStorage.removeItem(AUTH_TOKEN_KEY);
-      localStorage.removeItem(AUTH_USER_KEY);
+      try {
+        localStorage.removeItem('ts_eyewear_admin_token');
+        localStorage.removeItem('ts_eyewear_admin_user');
+      } catch {}
       notifyAuthChange(false);
     }
   }
 }
 
 /**
- * Verifica se o administrador está autenticado
+ * Retorna se o administrador está com sessão ativa em memória
  */
 export function isAdminAuthenticated(): boolean {
-  if (typeof window === 'undefined') return false;
-  return !!localStorage.getItem(AUTH_TOKEN_KEY);
+  return !!(inMemoryToken && inMemoryAdmin);
 }
 
 /**
- * Retorna os dados do administrador logado
+ * Retorna os dados do administrador logado a partir da memória
  */
 export function getAdminUser(): AdminUser | null {
-  if (typeof window === 'undefined') return null;
-  const raw = localStorage.getItem(AUTH_USER_KEY);
-  if (!raw) return null;
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return null;
-  }
+  return inMemoryAdmin;
 }
 
 /**
- * Retorna o token JWT atual
+ * Retorna o token JWT em memória (nunca de storage)
  */
 export function getAdminToken(): string | null {
-  if (typeof window === 'undefined') return null;
-  return localStorage.getItem(AUTH_TOKEN_KEY);
+  return inMemoryToken;
 }
 
 /**
- * Valida a sessão administrativa no backend
+ * Valida a sessão administrativa diretamente contra o backend (/admin/auth/me).
+ * Bate o token/cookie com a sessão salva no banco de dados.
+ * Não utiliza fallbacks - se a API recusar ou estiver offline, a sessão é considerada inválida.
  */
-export async function verifyAdminSession(): Promise<boolean> {
-  const baseUrl = getApiBaseUrl();
-  const token = getAdminToken();
-  if (!token) return false;
-
-  try {
-    const res = await fetch(`${baseUrl}/admin/auth/me`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      credentials: 'include',
-    });
-
-    if (res.status === 401) {
-      await logoutAdmin();
-      return false;
-    }
-
-    if (!res.ok) return false;
-    const data = await res.json();
-    return !!data.sucesso;
-  } catch {
-    // Em caso de falha transitória de rede, não desloga
-    return true;
+export async function verifyAdminSession(force = false): Promise<boolean> {
+  // Deduplicação de requisições concorrentes
+  if (verificationInFlight && !force) {
+    return verificationInFlight;
   }
+
+  const baseUrl = getApiBaseUrl();
+
+  const verifyPromise = (async () => {
+    try {
+      const headers: Record<string, string> = {
+        Accept: 'application/json',
+      };
+      if (inMemoryToken) {
+        headers['Authorization'] = `Bearer ${inMemoryToken}`;
+      }
+
+      const res = await fetch(`${baseUrl}/admin/auth/me`, {
+        method: 'GET',
+        headers,
+        credentials: 'include',
+        cache: 'no-store',
+      });
+
+      if (!res.ok) {
+        inMemoryToken = null;
+        inMemoryAdmin = null;
+        notifyAuthChange(false);
+        return false;
+      }
+
+      const data = await res.json();
+      if (data.sucesso && data.admin) {
+        inMemoryAdmin = data.admin;
+        if (data.token) {
+          inMemoryToken = data.token;
+        }
+        notifyAuthChange(true);
+        return true;
+      }
+
+      inMemoryToken = null;
+      inMemoryAdmin = null;
+      notifyAuthChange(false);
+      return false;
+    } catch {
+      inMemoryToken = null;
+      inMemoryAdmin = null;
+      notifyAuthChange(false);
+      return false;
+    } finally {
+      verificationInFlight = null;
+    }
+  })();
+
+  verificationInFlight = verifyPromise;
+  return verifyPromise;
+}
+
+/**
+ * Assegura sessão ativa válida antes de executar uma decisão ou mutação no site.
+ */
+export async function ensureAdminSession(): Promise<boolean> {
+  return verifyAdminSession(true);
 }

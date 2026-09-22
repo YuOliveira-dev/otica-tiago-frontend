@@ -11,8 +11,8 @@ import {
   CheckCircle2,
   ChevronDown,
   ChevronUp,
-  MessageCircle,
 } from 'lucide-react';
+import { WhatsAppIcon } from '../../components/Icons';
 import { gerarLinkWhatsApp } from '../../services/whatsapp';
 import styles from './institucional.module.css';
 
@@ -214,7 +214,7 @@ export default function InstitucionalPage() {
           rel="noopener noreferrer"
           className={styles.btnCtaWhatsApp}
         >
-          <MessageCircle size={22} />
+          <WhatsAppIcon size={22} />
           Falar com um Consultor no WhatsApp
         </a>
       </div>

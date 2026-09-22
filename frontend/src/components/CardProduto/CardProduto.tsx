@@ -6,9 +6,9 @@ import {
   Heart,
   ChevronLeft,
   ChevronRight,
-  MessageCircle,
   Star,
 } from 'lucide-react';
+import { WhatsAppIcon } from '../Icons';
 import { Product } from '../../types';
 import { generateWhatsAppLink } from '../../services/whatsapp';
 import styles from './CardProduto.module.css';
@@ -325,7 +325,7 @@ export function ProductCard({ product, produto }: ProductCardProps) {
             aria-label="Pedir no WhatsApp"
             title="Pedir no WhatsApp"
           >
-            <MessageCircle size={18} />
+            <WhatsAppIcon size={18} />
           </a>
         </div>
       </div>

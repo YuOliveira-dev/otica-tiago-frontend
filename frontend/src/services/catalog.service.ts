@@ -9,6 +9,7 @@ import {
   ProductVariation,
 } from '../types';
 import { MOCK_PRODUCTS, MOCK_CATEGORIES } from '../data/produtos';
+import { getAdminToken, logoutAdmin } from './auth.service';
 
 const getApiBaseUrl = () => {
   let url = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api').trim();
@@ -20,10 +21,7 @@ const getApiBaseUrl = () => {
 };
 
 const getAuthHeaders = () => {
-  const token =
-    typeof window !== 'undefined'
-      ? localStorage.getItem('ts_eyewear_admin_token')
-      : null;
+  const token = getAdminToken();
   return {
     'Content-Type': 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -457,30 +455,25 @@ export async function toggleProductVisibility(
       ? 'ARQUIVADO'
       : 'OCULTO';
 
-  try {
-    const res = await fetch(`${baseUrl}/admin/produtos/${id}/visibilidade`, {
-      method: 'PATCH',
-      headers,
-      credentials: 'include',
-      body: JSON.stringify({ status: statusBackend }),
-    });
+  const res = await fetch(`${baseUrl}/admin/produtos/${id}/visibilidade`, {
+    method: 'PATCH',
+    headers,
+    credentials: 'include',
+    body: JSON.stringify({ status: statusBackend }),
+  });
 
-    if (res.ok) {
-      const data = await res.json();
-      if (data.sucesso) {
-        const index = productsState.findIndex((p) => p.id === id);
-        if (index !== -1) productsState[index].status = newStatus;
-        return true;
-      }
-    }
-  } catch (err) {
-    console.warn('Falha ao alternar visibilidade via API:', err);
+  if (!res.ok) {
+    const errData = await res.json().catch(() => ({}));
+    throw new Error(errData.erro || 'Falha ao alternar visibilidade via API.');
   }
 
-  const index = productsState.findIndex((p) => p.id === id);
-  if (index === -1) return false;
-  productsState[index] = { ...productsState[index], status: newStatus };
-  return true;
+  const data = await res.json();
+  if (data.sucesso) {
+    const index = productsState.findIndex((p) => p.id === id);
+    if (index !== -1) productsState[index].status = newStatus;
+    return true;
+  }
+  return false;
 }
 
 /**
@@ -493,47 +486,23 @@ export async function toggleProductHighlight(
   const baseUrl = getApiBaseUrl();
   const headers = getAuthHeaders();
 
-  try {
-    const res = await fetch(`${baseUrl}/admin/produtos/${id}/destaque`, {
-      method: 'PATCH',
-      headers,
-      credentials: 'include',
-      body: JSON.stringify(options),
-    });
+  const res = await fetch(`${baseUrl}/admin/produtos/${id}/destaque`, {
+    method: 'PATCH',
+    headers,
+    credentials: 'include',
+    body: JSON.stringify(options),
+  });
 
-    if (res.ok) {
-      const json = await res.json();
-      if (json.sucesso && json.dados) {
-        const updated = mapBackendProductToFrontend(json.dados);
-        const idx = productsState.findIndex((p) => p.id === id);
-        if (idx >= 0) productsState[idx] = updated;
-        return updated;
-      }
-    }
-  } catch (err) {
-    console.warn('Falha na API para destaque, atualizando em memória:', err);
+  if (!res.ok) {
+    const errData = await res.json().catch(() => ({}));
+    throw new Error(errData.erro || 'Falha ao atualizar destaques na API.');
   }
 
-  // Fallback em memória
-  const idx = productsState.findIndex((p) => p.id === id);
-  if (idx !== -1) {
-    const current = productsState[idx];
-    const updated: Product = {
-      ...current,
-      featuredHome:
-        options.destaqueHome !== undefined
-          ? options.destaqueHome
-          : current.featuredHome,
-      destaqueHome:
-        options.destaqueHome !== undefined
-          ? options.destaqueHome
-          : current.destaqueHome,
-      isNew:
-        options.novidade !== undefined ? options.novidade : current.isNew,
-      novidade:
-        options.novidade !== undefined ? options.novidade : current.novidade,
-    };
-    productsState[idx] = updated;
+  const json = await res.json();
+  if (json.sucesso && json.dados) {
+    const updated = mapBackendProductToFrontend(json.dados);
+    const idx = productsState.findIndex((p) => p.id === id);
+    if (idx >= 0) productsState[idx] = updated;
     return updated;
   }
   return null;
@@ -587,47 +556,29 @@ export async function saveAdminProduct(product: Product): Promise<Product> {
     })),
   };
 
-  try {
-    const isEdit =
-      product.id && product.id.length > 10 && !product.id.startsWith('prod-');
-    const url = isEdit
-      ? `${baseUrl}/admin/produtos/${product.id}`
-      : `${baseUrl}/admin/produtos`;
-    const method = isEdit ? 'PUT' : 'POST';
+  const isEdit =
+    product.id && product.id.length > 10 && !product.id.startsWith('prod-');
+  const url = isEdit
+    ? `${baseUrl}/admin/produtos/${product.id}`
+    : `${baseUrl}/admin/produtos`;
+  const method = isEdit ? 'PUT' : 'POST';
 
-    const res = await fetch(url, {
-      method,
-      headers,
-      credentials: 'include',
-      body: JSON.stringify(payload),
-    });
+  const res = await fetch(url, {
+    method,
+    headers,
+    credentials: 'include',
+    body: JSON.stringify(payload),
+  });
 
-    const data = await res.json();
-    if (res.ok && data.sucesso && data.dados) {
-      const saved = mapBackendProductToFrontend(data.dados);
-      const idx = productsState.findIndex((p) => p.id === saved.id);
-      if (idx >= 0) productsState[idx] = saved;
-      else productsState.unshift(saved);
-      return saved;
-    } else if (!res.ok) {
-      throw new Error(data.erro || 'Falha ao salvar produto no banco de dados.');
-    }
-  } catch (err: any) {
-    console.warn('API indisponível, aplicando fallback local:', err);
-    if (err.message && !err.message.includes('fetch')) {
-      throw err;
-    }
+  const data = await res.json();
+  if (res.ok && data.sucesso && data.dados) {
+    const saved = mapBackendProductToFrontend(data.dados);
+    const idx = productsState.findIndex((p) => p.id === saved.id);
+    if (idx >= 0) productsState[idx] = saved;
+    else productsState.unshift(saved);
+    return saved;
   }
-
-  // Fallback local caso a API esteja temporariamente offline
-  const index = productsState.findIndex((p) => p.id === product.id);
-  if (index >= 0) {
-    productsState[index] = { ...product };
-    return productsState[index];
-  } else {
-    productsState.unshift(product);
-    return product;
-  }
+  throw new Error(data.erro || 'Falha ao salvar produto no banco de dados.');
 }
 
 /**
@@ -638,10 +589,7 @@ export async function uploadMediaAdmin(
   prefixo = 'produto'
 ): Promise<string> {
   const baseUrl = getApiBaseUrl();
-  const token =
-    typeof window !== 'undefined'
-      ? localStorage.getItem('ts_eyewear_admin_token')
-      : null;
+  const token = getAdminToken();
 
   const formData = new FormData();
   formData.append('imagem', file);
@@ -659,8 +607,7 @@ export async function uploadMediaAdmin(
   const data = await res.json();
   if (!res.ok || !data.sucesso) {
     if (res.status === 401 && typeof window !== 'undefined') {
-      localStorage.removeItem('ts_eyewear_admin_token');
-      localStorage.removeItem('ts_eyewear_admin_user');
+      logoutAdmin();
       window.location.href = '/admin';
     }
     throw new Error(data.erro || 'Falha ao enviar imagem para o armazenamento.');
@@ -680,38 +627,34 @@ export async function adjustVariationStock(
   const baseUrl = getApiBaseUrl();
   const headers = getAuthHeaders();
 
-  try {
-    const res = await fetch(
-      `${baseUrl}/admin/produtos/variacoes/${variationId}/estoque`,
-      {
-        method: 'PATCH',
-        headers,
-        credentials: 'include',
-        body: JSON.stringify({
-          novoEstoque: Math.max(0, newStock),
-          motivo: 'Ajuste manual via Painel Administrativo',
-        }),
-      }
-    );
-
-    if (res.ok) {
-      const data = await res.json();
-      if (data.sucesso) return true;
+  const res = await fetch(
+    `${baseUrl}/admin/produtos/variacoes/${variationId}/estoque`,
+    {
+      method: 'PATCH',
+      headers,
+      credentials: 'include',
+      body: JSON.stringify({
+        novoEstoque: Math.max(0, newStock),
+        motivo: 'Ajuste manual via Painel Administrativo',
+      }),
     }
-  } catch (err) {
-    console.warn('Falha ao atualizar estoque via API:', err);
+  );
+
+  const data = await res.json().catch(() => ({}));
+  if (res.ok && data.sucesso) {
+    const prod = productsState.find((p) => p.id === productId);
+    if (prod) {
+      const variations = prod.variations || prod.variacoes || [];
+      const variation = variations.find((v) => v.id === variationId);
+      if (variation) {
+        const validStock = Math.max(0, newStock);
+        variation.stock = validStock;
+        variation.estoqueAtual = validStock;
+      }
+    }
+    return true;
   }
-
-  const prod = productsState.find((p) => p.id === productId);
-  if (!prod) return false;
-  const variations = prod.variations || prod.variacoes || [];
-  const variation = variations.find((v) => v.id === variationId);
-  if (!variation) return false;
-
-  const validStock = Math.max(0, newStock);
-  variation.stock = validStock;
-  variation.estoqueAtual = validStock;
-  return true;
+  throw new Error(data.erro || 'Falha ao atualizar estoque da variação na API.');
 }
 
 /**
@@ -721,47 +664,33 @@ export async function saveCategory(category: Category): Promise<Category> {
   const baseUrl = getApiBaseUrl();
   const headers = getAuthHeaders();
 
-  try {
-    const isEdit = category.id && category.id.length > 10;
-    const url = isEdit
-      ? `${baseUrl}/admin/categorias/${category.id}`
-      : `${baseUrl}/admin/categorias`;
-    const method = isEdit ? 'PUT' : 'POST';
+  const isEdit = category.id && category.id.length > 10;
+  const url = isEdit
+    ? `${baseUrl}/admin/categorias/${category.id}`
+    : `${baseUrl}/admin/categorias`;
+  const method = isEdit ? 'PUT' : 'POST';
 
-    const res = await fetch(url, {
-      method,
-      headers,
-      credentials: 'include',
-      body: JSON.stringify({
-        nome: category.nome || category.name,
-        slug: category.slug,
-        ordem: category.ordem ?? category.order ?? 1,
-        ativo: category.ativo ?? category.isActive ?? true,
-      }),
-    });
+  const res = await fetch(url, {
+    method,
+    headers,
+    credentials: 'include',
+    body: JSON.stringify({
+      nome: category.nome || category.name,
+      slug: category.slug,
+      ordem: category.ordem ?? category.order ?? 1,
+      ativo: category.ativo ?? category.isActive ?? true,
+    }),
+  });
 
-    if (res.ok) {
-      const data = await res.json();
-      if (data.sucesso && data.dados) {
-        const saved = data.dados;
-        const index = categoriesState.findIndex((c) => c.id === saved.id);
-        if (index >= 0) categoriesState[index] = saved;
-        else categoriesState.push(saved);
-        return saved;
-      }
-    }
-  } catch (err) {
-    console.warn('Falha ao salvar categoria via API:', err);
+  const data = await res.json().catch(() => ({}));
+  if (res.ok && data.sucesso && data.dados) {
+    const saved = data.dados;
+    const index = categoriesState.findIndex((c) => c.id === saved.id);
+    if (index >= 0) categoriesState[index] = saved;
+    else categoriesState.push(saved);
+    return saved;
   }
-
-  const index = categoriesState.findIndex((c) => c.id === category.id);
-  if (index >= 0) {
-    categoriesState[index] = { ...category };
-    return categoriesState[index];
-  } else {
-    categoriesState.push(category);
-    return category;
-  }
+  throw new Error(data.erro || 'Falha ao salvar categoria no banco de dados.');
 }
 
 /**
@@ -771,29 +700,19 @@ export async function deleteCategory(id: string): Promise<boolean> {
   const baseUrl = getApiBaseUrl();
   const headers = getAuthHeaders();
 
-  try {
-    const res = await fetch(`${baseUrl}/admin/categorias/${id}`, {
-      method: 'DELETE',
-      headers,
-      credentials: 'include',
-    });
+  const res = await fetch(`${baseUrl}/admin/categorias/${id}`, {
+    method: 'DELETE',
+    headers,
+    credentials: 'include',
+  });
 
-    if (res.ok) {
-      const data = await res.json();
-      if (data.sucesso) {
-        const index = categoriesState.findIndex((c) => c.id === id);
-        if (index !== -1) categoriesState.splice(index, 1);
-        return true;
-      }
-    }
-  } catch (err) {
-    console.warn('Falha ao excluir categoria via API:', err);
+  const data = await res.json().catch(() => ({}));
+  if (res.ok && data.sucesso) {
+    const index = categoriesState.findIndex((c) => c.id === id);
+    if (index !== -1) categoriesState.splice(index, 1);
+    return true;
   }
-
-  const index = categoriesState.findIndex((c) => c.id === id);
-  if (index === -1) return false;
-  categoriesState.splice(index, 1);
-  return true;
+  throw new Error(data.erro || 'Falha ao excluir categoria no banco de dados.');
 }
 
 /**
@@ -806,38 +725,24 @@ export async function saveSubcategory(
   const baseUrl = getApiBaseUrl();
   const headers = getAuthHeaders();
 
-  try {
-    const res = await fetch(
-      `${baseUrl}/admin/categorias/${categoryId}/subcategorias`,
-      {
-        method: 'POST',
-        headers,
-        credentials: 'include',
-        body: JSON.stringify({
-          nome: subcategory.nome || subcategory.name,
-          slug: subcategory.slug,
-        }),
-      }
-    );
-
-    if (res.ok) {
-      const data = await res.json();
-      if (data.sucesso) return true;
+  const res = await fetch(
+    `${baseUrl}/admin/categorias/${categoryId}/subcategorias`,
+    {
+      method: 'POST',
+      headers,
+      credentials: 'include',
+      body: JSON.stringify({
+        nome: subcategory.nome || subcategory.name,
+        slug: subcategory.slug,
+      }),
     }
-  } catch (err) {
-    console.warn('Falha ao salvar subcategoria via API:', err);
-  }
+  );
 
-  const cat = categoriesState.find((c) => c.id === categoryId);
-  if (!cat) return false;
-  if (!cat.subcategories) cat.subcategories = [];
-  const index = cat.subcategories.findIndex((s) => s.id === subcategory.id);
-  if (index >= 0) {
-    cat.subcategories[index] = subcategory;
-  } else {
-    cat.subcategories.push(subcategory);
+  const data = await res.json().catch(() => ({}));
+  if (res.ok && data.sucesso) {
+    return true;
   }
-  return true;
+  throw new Error(data.erro || 'Falha ao salvar subcategoria na API.');
 }
 
 /**
@@ -850,28 +755,24 @@ export async function deleteSubcategory(
   const baseUrl = getApiBaseUrl();
   const headers = getAuthHeaders();
 
-  try {
-    const res = await fetch(
-      `${baseUrl}/admin/categorias/subcategorias/${subcategoryId}`,
-      {
-        method: 'DELETE',
-        headers,
-        credentials: 'include',
-      }
-    );
-
-    if (res.ok) {
-      const data = await res.json();
-      if (data.sucesso) return true;
+  const res = await fetch(
+    `${baseUrl}/admin/categorias/subcategorias/${subcategoryId}`,
+    {
+      method: 'DELETE',
+      headers,
+      credentials: 'include',
     }
-  } catch (err) {
-    console.warn('Falha ao excluir subcategoria via API:', err);
-  }
+  );
 
-  const cat = categoriesState.find((c) => c.id === categoryId);
-  if (!cat || !cat.subcategories) return false;
-  cat.subcategories = cat.subcategories.filter((s) => s.id !== subcategoryId);
-  return true;
+  const data = await res.json().catch(() => ({}));
+  if (res.ok && data.sucesso) {
+    const cat = categoriesState.find((c) => c.id === categoryId);
+    if (cat && cat.subcategories) {
+      cat.subcategories = cat.subcategories.filter((s) => s.id !== subcategoryId);
+    }
+    return true;
+  }
+  throw new Error(data.erro || 'Falha ao excluir subcategoria na API.');
 }
 
 // Backward compatibility exports
