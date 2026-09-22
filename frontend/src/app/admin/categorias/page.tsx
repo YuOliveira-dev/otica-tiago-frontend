@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Plus, Edit2, Trash2, X, Tag, PlusCircle } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, Tag, PlusCircle, Loader2 } from 'lucide-react';
 import {
   getCategories,
   saveCategory,
@@ -26,6 +26,10 @@ export default function AdminCategoriasPage() {
 
   // Quick subcategory inputs per category { [catId]: string }
   const [subcategoryInputs, setSubcategoryInputs] = useState<Record<string, string>>({});
+  const [isSavingCategory, setIsSavingCategory] = useState(false);
+  const [isDeletingCategory, setIsDeletingCategory] = useState(false);
+  const [addingSubCatId, setAddingSubCatId] = useState<string | null>(null);
+  const [deletingSubId, setDeletingSubId] = useState<string | null>(null);
 
   // Friendly Action Modal State
   const [modalConfig, setModalConfig] = useState<{
@@ -93,23 +97,30 @@ export default function AdminCategoriasPage() {
 
   const handleSaveCategory = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!categoryName.trim()) return;
+    if (!categoryName.trim() || isSavingCategory) return;
 
-    const existingCat = editCategoryId ? categories.find((c) => c.id === editCategoryId) : null;
-    const newCategory: Category = {
-      id: editCategoryId || `cat-${Date.now()}`,
-      name: categoryName.trim(),
-      nome: categoryName.trim(),
-      slug: categorySlug.trim() || categoryName.toLowerCase(),
-      order: Number(categoryOrder),
-      ordem: Number(categoryOrder),
-      subcategories: existingCat?.subcategories || existingCat?.subcategorias || [],
-      subcategorias: existingCat?.subcategories || existingCat?.subcategorias || [],
-    };
+    setIsSavingCategory(true);
+    try {
+      const existingCat = editCategoryId ? categories.find((c) => c.id === editCategoryId) : null;
+      const newCategory: Category = {
+        id: editCategoryId || `cat-${Date.now()}`,
+        name: categoryName.trim(),
+        nome: categoryName.trim(),
+        slug: categorySlug.trim() || categoryName.toLowerCase(),
+        order: Number(categoryOrder),
+        ordem: Number(categoryOrder),
+        subcategories: existingCat?.subcategories || existingCat?.subcategorias || [],
+        subcategorias: existingCat?.subcategories || existingCat?.subcategorias || [],
+      };
 
-    await saveCategory(newCategory);
-    await loadCategories();
-    setIsModalOpen(false);
+      await saveCategory(newCategory);
+      await loadCategories();
+      setIsModalOpen(false);
+    } catch (err) {
+      console.error('Erro ao salvar categoria:', err);
+    } finally {
+      setIsSavingCategory(false);
+    }
   };
 
   const handleDeleteCategory = (id: string, name: string) => {
@@ -121,9 +132,16 @@ export default function AdminCategoriasPage() {
       confirmText: 'Sim, Excluir',
       cancelText: 'Cancelar',
       onConfirm: async () => {
-        closeModal();
-        await deleteCategory(id);
-        await loadCategories();
+        setIsDeletingCategory(true);
+        try {
+          await deleteCategory(id);
+          await loadCategories();
+          closeModal();
+        } catch (err) {
+          console.error('Erro ao excluir categoria:', err);
+        } finally {
+          setIsDeletingCategory(false);
+        }
       },
       onCancel: closeModal,
     });
@@ -132,31 +150,46 @@ export default function AdminCategoriasPage() {
   // Subcategories
   const handleAddSubcategory = async (catId: string) => {
     const subName = subcategoryInputs[catId];
-    if (!subName || !subName.trim()) return;
+    if (!subName || !subName.trim() || addingSubCatId) return;
 
-    const subSlug = subName
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)+/g, '');
+    setAddingSubCatId(catId);
+    try {
+      const subSlug = subName
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)+/g, '');
 
-    const newSub: Subcategory = {
-      id: `sub-${Date.now()}`,
-      name: subName.trim(),
-      nome: subName.trim(),
-      slug: subSlug,
-      categoryId: catId,
-    };
+      const newSub: Subcategory = {
+        id: `sub-${Date.now()}`,
+        name: subName.trim(),
+        nome: subName.trim(),
+        slug: subSlug,
+        categoryId: catId,
+      };
 
-    await saveSubcategory(catId, newSub);
-    setSubcategoryInputs((prev) => ({ ...prev, [catId]: '' }));
-    await loadCategories();
+      await saveSubcategory(catId, newSub);
+      setSubcategoryInputs((prev) => ({ ...prev, [catId]: '' }));
+      await loadCategories();
+    } catch (err) {
+      console.error('Erro ao adicionar subcategoria:', err);
+    } finally {
+      setAddingSubCatId(null);
+    }
   };
 
   const handleDeleteSubcategory = async (catId: string, subId: string) => {
-    await deleteSubcategory(catId, subId);
-    await loadCategories();
+    if (deletingSubId) return;
+    setDeletingSubId(subId);
+    try {
+      await deleteSubcategory(catId, subId);
+      await loadCategories();
+    } catch (err) {
+      console.error('Erro ao excluir subcategoria:', err);
+    } finally {
+      setDeletingSubId(null);
+    }
   };
 
   return (
@@ -227,10 +260,15 @@ export default function AdminCategoriasPage() {
                             <button
                               type="button"
                               onClick={() => handleDeleteSubcategory(cat.id, sub.id)}
+                              disabled={deletingSubId === sub.id}
                               className={styles.subTagRemove}
                               title="Remover subcategoria"
                             >
-                              <X size={12} />
+                              {deletingSubId === sub.id ? (
+                                <Loader2 size={12} className="animate-spin" />
+                              ) : (
+                                <X size={12} />
+                              )}
                             </button>
                           </span>
                         );
@@ -261,9 +299,12 @@ export default function AdminCategoriasPage() {
                     <button
                       type="button"
                       onClick={() => handleAddSubcategory(cat.id)}
+                      disabled={addingSubCatId === cat.id}
                       className={styles.btnAddSub}
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                     >
-                      Adicionar
+                      {addingSubCatId === cat.id && <Loader2 size={12} className="animate-spin" />}
+                      {addingSubCatId === cat.id ? 'Adicionando...' : 'Adicionar'}
                     </button>
                   </div>
                 </div>
@@ -329,8 +370,16 @@ export default function AdminCategoriasPage() {
                 >
                   Cancelar
                 </button>
-                <button type="submit" className={styles.btnSubmit}>
-                  {editCategoryId ? 'Salvar Alterações' : 'Criar Categoria'}
+                <button type="submit" disabled={isSavingCategory} className={styles.btnSubmit}>
+                  {isSavingCategory ? (
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'center' }}>
+                      <Loader2 size={16} className="animate-spin" /> Salvando...
+                    </span>
+                  ) : editCategoryId ? (
+                    'Salvar Alterações'
+                  ) : (
+                    'Criar Categoria'
+                  )}
                 </button>
               </div>
             </form>
@@ -345,6 +394,7 @@ export default function AdminCategoriasPage() {
         message={modalConfig.message}
         confirmText={modalConfig.confirmText}
         cancelText={modalConfig.cancelText}
+        isLoading={isDeletingCategory}
         onConfirm={modalConfig.onConfirm || closeModal}
         onCancel={modalConfig.onCancel || closeModal}
         onClose={closeModal}

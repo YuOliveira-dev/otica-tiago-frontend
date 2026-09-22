@@ -20,6 +20,7 @@ import {
   ChevronRight,
   Save,
   Check,
+  Loader2,
 } from 'lucide-react';
 import {
   getBanners,
@@ -45,20 +46,17 @@ const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 export default function AdminBannersPage() {
-  // Tab State: 'hero' (Hero Banners) | 'categories' (Category Vitrine Cards)
   const [activeTab, setActiveTab] = useState<'hero' | 'categories'>('hero');
 
-  // ==========================================
-  // 1. STATE - BANNERS HERO
-  // ==========================================
   const [banners, setBanners] = useState<Banner[]>([]);
   const [isLoadingBanners, setIsLoadingBanners] = useState(true);
+  const [togglingBannerId, setTogglingBannerId] = useState<string | null>(null);
+  const [isSavingBanner, setIsSavingBanner] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  // Banner Modal State
   const [isBannerModalOpen, setIsBannerModalOpen] = useState(false);
   const [editBannerId, setEditBannerId] = useState<string | null>(null);
 
-  // Action Modal State
   const [actionModalConfig, setActionModalConfig] = useState<{
     isOpen: boolean;
     type: ActionModalType;
@@ -103,13 +101,13 @@ export default function AdminBannersPage() {
   // ==========================================
   const [categoryCards, setCategoryCards] = useState<HomeCategoryCard[]>([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+  const [togglingCategoryId, setTogglingCategoryId] = useState<string | null>(null);
+  const [isSavingCategoryCard, setIsSavingCategoryCard] = useState(false);
 
-  // Section Header / Category texts
   const [sectionConfig, setSectionConfig] = useState<HomeCategorySectionConfig>(INITIAL_CATEGORY_SECTION_CONFIG);
   const [isSavingConfig, setIsSavingConfig] = useState(false);
   const [configSuccessFeedback, setConfigSuccessFeedback] = useState(false);
 
-  // Category Card Modal State
   const [isCatModalOpen, setIsCatModalOpen] = useState(false);
   const [editCatId, setEditCatId] = useState<string | null>(null);
 
@@ -313,22 +311,30 @@ export default function AdminBannersPage() {
       return;
     }
 
-    const newBanner: Banner = {
-      id: editBannerId || `banner-${Date.now()}`,
-      title: title.trim(),
-      subtitle: subtitle.trim(),
-      ctaText: ctaText.trim() || 'CONFERIR COLEÇÃO',
-      ctaUrl: ctaUrl.trim() || '/catalogo',
-      badgeTitle: badgeTitle.trim(),
-      badgeSub: badgeSub.trim(),
-      imageUrl: imageUrl.trim(),
-      order: Number(order) || 1,
-      isActive,
-    };
+    setIsSavingBanner(true);
+    try {
+      const newBanner: Banner = {
+        id: editBannerId || `banner-${Date.now()}`,
+        title: title.trim(),
+        subtitle: subtitle.trim(),
+        ctaText: ctaText.trim() || 'CONFERIR COLEÇÃO',
+        ctaUrl: ctaUrl.trim() || '/catalogo',
+        badgeTitle: badgeTitle.trim(),
+        badgeSub: badgeSub.trim(),
+        imageUrl: imageUrl.trim(),
+        order: Number(order) || 1,
+        isActive,
+      };
 
-    await saveBanner(newBanner);
-    await loadBanners();
-    setIsBannerModalOpen(false);
+      await saveBanner(newBanner);
+      await loadBanners();
+      setIsBannerModalOpen(false);
+    } catch (err) {
+      console.error('Erro ao salvar banner:', err);
+      setUploadError('Falha ao salvar banner. Tente novamente.');
+    } finally {
+      setIsSavingBanner(false);
+    }
   };
 
   const handleDeleteBanner = (id: string, bannerTitle: string) => {
@@ -340,17 +346,32 @@ export default function AdminBannersPage() {
       confirmText: 'Sim, Excluir',
       cancelText: 'Cancelar',
       onConfirm: async () => {
-        closeActionModal();
-        await deleteBanner(id);
-        await loadBanners();
+        setIsDeleting(true);
+        try {
+          await deleteBanner(id);
+          await loadBanners();
+          closeActionModal();
+        } catch (err) {
+          console.error('Erro ao excluir banner:', err);
+        } finally {
+          setIsDeleting(false);
+        }
       },
       onCancel: closeActionModal,
     });
   };
 
   const handleToggleBannerActive = async (id: string) => {
-    await toggleBannerStatus(id);
-    await loadBanners();
+    if (togglingBannerId) return;
+    setTogglingBannerId(id);
+    try {
+      await toggleBannerStatus(id);
+      await loadBanners();
+    } catch (err) {
+      console.error('Erro ao alternar banner:', err);
+    } finally {
+      setTogglingBannerId(null);
+    }
   };
 
   // ==========================================
@@ -485,19 +506,27 @@ export default function AdminBannersPage() {
       return;
     }
 
-    const newCard: HomeCategoryCard = {
-      id: editCatId || `cat-card-${Date.now()}`,
-      title: catTitle.trim(),
-      sub: catSub.trim(),
-      link: catLink.trim() || '/catalogo',
-      img: catImgUrl.trim(),
-      order: Number(catOrder) || 1,
-      isActive: catIsActive,
-    };
+    setIsSavingCategoryCard(true);
+    try {
+      const newCard: HomeCategoryCard = {
+        id: editCatId || `cat-card-${Date.now()}`,
+        title: catTitle.trim(),
+        sub: catSub.trim(),
+        link: catLink.trim() || '/catalogo',
+        img: catImgUrl.trim(),
+        order: Number(catOrder) || 1,
+        isActive: catIsActive,
+      };
 
-    await saveHomeCategoryCard(newCard);
-    await loadCategories();
-    setIsCatModalOpen(false);
+      await saveHomeCategoryCard(newCard);
+      await loadCategories();
+      setIsCatModalOpen(false);
+    } catch (err) {
+      console.error('Erro ao salvar card de categoria:', err);
+      setCatUploadError('Falha ao salvar card. Tente novamente.');
+    } finally {
+      setIsSavingCategoryCard(false);
+    }
   };
 
   const handleDeleteCategoryCard = (id: string, cardTitle: string) => {
@@ -509,17 +538,32 @@ export default function AdminBannersPage() {
       confirmText: 'Sim, Excluir',
       cancelText: 'Cancelar',
       onConfirm: async () => {
-        closeActionModal();
-        await deleteHomeCategoryCard(id);
-        await loadCategories();
+        setIsDeleting(true);
+        try {
+          await deleteHomeCategoryCard(id);
+          await loadCategories();
+          closeActionModal();
+        } catch (err) {
+          console.error('Erro ao excluir card:', err);
+        } finally {
+          setIsDeleting(false);
+        }
       },
       onCancel: closeActionModal,
     });
   };
 
   const handleToggleCategoryActive = async (id: string) => {
-    await toggleHomeCategoryCardStatus(id);
-    await loadCategories();
+    if (togglingCategoryId) return;
+    setTogglingCategoryId(id);
+    try {
+      await toggleHomeCategoryCardStatus(id);
+      await loadCategories();
+    } catch (err) {
+      console.error('Erro ao alternar status do card de categoria:', err);
+    } finally {
+      setTogglingCategoryId(null);
+    }
   };
 
   return (
@@ -662,8 +706,13 @@ export default function AdminBannersPage() {
                         onClick={() => handleToggleBannerActive(banner.id)}
                         className={styles.toggleBtn}
                         title={banner.isActive ? 'Pausar exibição do banner' : 'Ativar banner no carrossel'}
+                        disabled={togglingBannerId === banner.id}
                       >
-                        {banner.isActive ? (
+                        {togglingBannerId === banner.id ? (
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <Loader2 size={14} className="animate-spin" /> Processando...
+                          </span>
+                        ) : banner.isActive ? (
                           <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                             <EyeOff size={14} /> Pausar
                           </span>
@@ -858,8 +907,13 @@ export default function AdminBannersPage() {
                         onClick={() => handleToggleCategoryActive(card.id)}
                         className={styles.toggleBtn}
                         title={card.isActive ? 'Pausar exibição do card' : 'Ativar card na vitrine'}
+                        disabled={togglingCategoryId === card.id}
                       >
-                        {card.isActive ? (
+                        {togglingCategoryId === card.id ? (
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <Loader2 size={14} className="animate-spin" /> Processando...
+                          </span>
+                        ) : card.isActive ? (
                           <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                             <EyeOff size={14} /> Pausar
                           </span>
@@ -1130,8 +1184,14 @@ export default function AdminBannersPage() {
                 >
                   Cancelar
                 </button>
-                <button type="submit" className={styles.btnSave}>
-                  Salvar Banner
+                <button type="submit" className={styles.btnSave} disabled={isSavingBanner}>
+                  {isSavingBanner ? (
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'center' }}>
+                      <Loader2 size={16} className="animate-spin" /> Salvando...
+                    </span>
+                  ) : (
+                    'Salvar Banner'
+                  )}
                 </button>
               </div>
             </form>
@@ -1345,8 +1405,14 @@ export default function AdminBannersPage() {
                 >
                   Cancelar
                 </button>
-                <button type="submit" className={styles.btnSave}>
-                  Salvar Card
+                <button type="submit" className={styles.btnSave} disabled={isSavingCategoryCard}>
+                  {isSavingCategoryCard ? (
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'center' }}>
+                      <Loader2 size={16} className="animate-spin" /> Salvando...
+                    </span>
+                  ) : (
+                    'Salvar Card'
+                  )}
                 </button>
               </div>
             </form>
@@ -1362,6 +1428,7 @@ export default function AdminBannersPage() {
         message={actionModalConfig.message}
         confirmText={actionModalConfig.confirmText}
         cancelText={actionModalConfig.cancelText}
+        isLoading={isDeleting}
         onConfirm={actionModalConfig.onConfirm || closeActionModal}
         onCancel={actionModalConfig.onCancel || closeActionModal}
         onClose={closeActionModal}

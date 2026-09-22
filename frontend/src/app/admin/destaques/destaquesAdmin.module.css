@@ -331,6 +331,12 @@
   color: #ffffff;
 }
 
+.toggleBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 .btnRemove {
   background: transparent;
   color: #ef4444;
@@ -350,6 +356,12 @@
 .btnRemove:hover {
   background: #fee2e2;
   border-color: #fca5a5;
+}
+
+.btnRemove:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 .emptyCard {

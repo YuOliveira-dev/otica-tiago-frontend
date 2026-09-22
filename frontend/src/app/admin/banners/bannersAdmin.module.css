@@ -288,6 +288,12 @@
   background-color: var(--color-border);
 }
 
+.toggleBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 /* Modal */
 .modalBackdrop {
   position: fixed;
@@ -611,6 +617,12 @@
 
 .btnSave:hover {
   background-color: var(--color-accent-600);
+}
+
+.btnSave:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 /* Tabs de Navegação entre Banners Hero e Cards de Categorias */

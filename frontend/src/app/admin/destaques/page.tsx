@@ -28,6 +28,8 @@ export default function DestaquesAdminPage() {
   const [selectedProductId, setSelectedProductId] = useState<string>('');
   const [isLançamentoChecked, setIsLançamentoChecked] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [togglingNewId, setTogglingNewId] = useState<string | null>(null);
+  const [isRemoving, setIsRemoving] = useState(false);
 
   // Friendly Action Modal State
   const [modalConfig, setModalConfig] = useState<{
@@ -119,6 +121,8 @@ export default function DestaquesAdminPage() {
 
   // Alternar se o produto é Lançamento (badge verde)
   const handleToggleLançamento = async (product: Product) => {
+    if (togglingNewId) return;
+    setTogglingNewId(product.id);
     const currentIsNew = Boolean(product.isNew || product.novidade);
     const newIsNew = !currentIsNew;
 
@@ -145,11 +149,14 @@ export default function DestaquesAdminPage() {
         confirmText: 'Fechar',
         onConfirm: closeModal,
       });
+    } finally {
+      setTogglingNewId(null);
     }
   };
 
   // Efetiva a remoção da vitrine após confirmação
   const performRemoval = async (product: Product) => {
+    setIsRemoving(true);
     setProducts((prev) =>
       prev.map((p) =>
         p.id === product.id
@@ -181,6 +188,8 @@ export default function DestaquesAdminPage() {
         confirmText: 'Fechar',
         onConfirm: closeModal,
       });
+    } finally {
+      setIsRemoving(false);
     }
   };
 
@@ -371,11 +380,22 @@ export default function DestaquesAdminPage() {
                       <button
                         type="button"
                         onClick={() => handleToggleLançamento(prod)}
+                        disabled={togglingNewId === prod.id}
                         className={`${styles.toggleBtn} ${
                           isNew ? styles.toggleBtnActive : ''
                         }`}
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                       >
-                        {isNew ? '✓ Sim (Ativo)' : 'Não'}
+                        {togglingNewId === prod.id ? (
+                          <>
+                            <Loader2 size={12} className="animate-spin" />
+                            <span>Salvando...</span>
+                          </>
+                        ) : isNew ? (
+                          '✓ Sim (Ativo)'
+                        ) : (
+                          'Não'
+                        )}
                       </button>
                     </div>
 
@@ -402,6 +422,7 @@ export default function DestaquesAdminPage() {
         message={modalConfig.message}
         confirmText={modalConfig.confirmText}
         cancelText={modalConfig.cancelText}
+        isLoading={isRemoving}
         onConfirm={modalConfig.onConfirm || closeModal}
         onCancel={modalConfig.onCancel || closeModal}
         onClose={closeModal}

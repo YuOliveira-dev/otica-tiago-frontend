@@ -33,6 +33,7 @@ export default function AdminLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isAuthChecked, setIsAuthChecked] = useState(false);
   const [adminUser, setAdminUser] = useState<{ nome: string; email: string } | null>(null);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const isLoginPage = pathname === '/admin';
 
@@ -100,8 +101,14 @@ export default function AdminLayout({
 
   const handleLogout = async (e: React.MouseEvent) => {
     e.preventDefault();
-    await logoutAdmin();
-    router.replace('/admin');
+    if (isLoggingOut) return;
+    setIsLoggingOut(true);
+    try {
+      await logoutAdmin();
+      router.replace('/admin');
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
 
   const navLinks = [
@@ -233,13 +240,15 @@ export default function AdminLayout({
           <button
             type="button"
             onClick={handleLogout}
+            disabled={isLoggingOut}
             className={styles.navItem}
             style={{
               color: '#ef4444',
               padding: '0.5rem 0',
               background: 'transparent',
               border: 'none',
-              cursor: 'pointer',
+              cursor: isLoggingOut ? 'not-allowed' : 'pointer',
+              opacity: isLoggingOut ? 0.6 : 1,
               width: '100%',
               display: 'flex',
               alignItems: 'center',
@@ -247,8 +256,8 @@ export default function AdminLayout({
               font: 'inherit',
             }}
           >
-            <LogOut size={16} />
-            <span>Sair do Painel</span>
+            {isLoggingOut ? <Loader2 size={16} className="animate-spin" /> : <LogOut size={16} />}
+            <span>{isLoggingOut ? 'Saindo...' : 'Sair do Painel'}</span>
           </button>
         </div>
       </aside>

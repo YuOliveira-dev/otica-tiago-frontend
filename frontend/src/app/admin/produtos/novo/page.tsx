@@ -485,7 +485,7 @@ function ProductForm() {
 
         <div className={styles.actionsHeader}>
           <button type="submit" disabled={isSaving} className={styles.btnSave}>
-            <Save size={18} />
+            {isSaving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
             {isSaving ? 'Salvando...' : editId ? 'Atualizar Produto' : 'Publicar Produto'}
           </button>
         </div>
@@ -1088,7 +1088,7 @@ function ProductForm() {
       {/* Bottom Save Button */}
       <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
         <button type="submit" disabled={isSaving} className={styles.btnSave}>
-          <Save size={18} />
+          {isSaving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
           {isSaving ? 'Salvando...' : editId ? 'Atualizar Produto' : 'Publicar Produto'}
         </button>
       </div>

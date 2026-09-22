@@ -197,6 +197,12 @@
   color: #ffffff;
 }
 
+.btnAddSub:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 /* Modal */
 .modalBackdrop {
   position: fixed;
@@ -298,6 +304,12 @@
 .btnSubmit:hover {
   background: var(--color-accent);
   color: #111111;
+}
+
+.btnSubmit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 @media (max-width: 900px) {

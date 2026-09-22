@@ -9,6 +9,7 @@ import {
   ExternalLink,
   Glasses,
   CheckCircle,
+  Loader2,
 } from 'lucide-react';
 import {
   getAdminProducts,
@@ -23,6 +24,7 @@ export default function AdminProdutosPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [togglingProductId, setTogglingProductId] = useState<string | null>(null);
 
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -70,6 +72,8 @@ export default function AdminProdutosPage() {
 
   // Perform toggle visibility status
   const performToggleStatus = async (product: Product, newStatus: ProductStatus) => {
+    if (togglingProductId) return;
+    setTogglingProductId(product.id);
     const title = product.title || product.titulo || '';
 
     // Optimistic update
@@ -102,11 +106,14 @@ export default function AdminProdutosPage() {
         confirmText: 'Fechar',
         onConfirm: closeModal,
       });
+    } finally {
+      setTogglingProductId(null);
     }
   };
 
   // Toggle visibility status with confirmation when hiding
   const handleToggleStatus = (product: Product) => {
+    if (togglingProductId) return;
     const isCurrentlyActive = product.status === 'ACTIVE' || product.status === 'ATIVO';
     const newStatus: ProductStatus = isCurrentlyActive ? 'HIDDEN' : 'ACTIVE';
     const title = product.title || product.titulo || '';
@@ -379,12 +386,14 @@ export default function AdminProdutosPage() {
                       <td>
                         <label
                           className={styles.switchLabel}
+                          style={togglingProductId === prod.id ? { opacity: 0.6, cursor: 'not-allowed' } : undefined}
                           title="Clique para alternar entre Ativo e Oculto"
                         >
                           <input
                             type="checkbox"
                             className={styles.switchInput}
                             checked={isActive}
+                            disabled={togglingProductId === prod.id}
                             onChange={() => handleToggleStatus(prod)}
                           />
                           <span className={styles.switchSlider} />
@@ -394,7 +403,9 @@ export default function AdminProdutosPage() {
                                 ? styles.switchTextActive
                                 : styles.switchTextHidden
                             }`}
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                           >
+                            {togglingProductId === prod.id && <Loader2 size={12} className="animate-spin" />}
                             {isActive ? 'Visível' : 'Oculto'}
                           </span>
                         </label>
