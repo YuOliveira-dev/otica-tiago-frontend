@@ -105,6 +105,9 @@
   position: relative;
   z-index: 10;
   color: #FFFFFF;
+  width: 100%;
+  max-width: 100%;
+  text-align: left;
 }
 
 .categoriaTitulo {
@@ -112,6 +115,8 @@
   font-size: 1.375rem;
   font-weight: 700;
   margin-bottom: var(--space-1);
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .categoriaSub {
@@ -121,6 +126,7 @@
   align-items: center;
   gap: var(--space-1);
   font-weight: 500;
+  flex-wrap: wrap;
 }
 
 .categoriaCard:hover .categoriaSub {
@@ -214,6 +220,7 @@
 .btnWhatsAppLargo {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: var(--space-2);
   padding: 16px 36px;
   background-color: var(--color-whatsapp);
@@ -223,6 +230,8 @@
   border-radius: var(--radius-full);
   box-shadow: 0 8px 20px rgba(37, 211, 102, 0.4);
   transition: all var(--transition-normal);
+  max-width: 100%;
+  text-align: center;
 }
 
 .btnWhatsAppLargo:hover {
@@ -230,3 +239,57 @@
   transform: translateY(-2px);
   box-shadow: 0 12px 28px rgba(37, 211, 102, 0.6);
 }
+
+@media (max-width: 640px) {
+  .section {
+    padding: var(--space-8) 0;
+  }
+  .sectionHeader {
+    margin-bottom: var(--space-6);
+  }
+  .sectionTitle {
+    font-size: 1.5rem;
+  }
+  .sectionDesc {
+    font-size: 0.875rem;
+  }
+  .categoriaCard {
+    height: 180px;
+    padding: var(--space-4);
+  }
+  .categoriaTitulo {
+    font-size: 1.15rem;
+  }
+  .categoriaSub {
+    font-size: 0.75rem;
+  }
+  .btnVerTodos {
+    width: 100%;
+    max-width: 300px;
+    justify-content: center;
+    padding: 12px 20px;
+    font-size: 0.875rem;
+    margin-top: var(--space-6);
+  }
+  .consultoriaBanner {
+    padding: var(--space-8) var(--space-4);
+    margin: var(--space-8) 0;
+  }
+  .consultoriaTitle {
+    font-size: 1.35rem;
+    line-height: 1.25;
+  }
+  .consultoriaDesc {
+    font-size: 0.875rem;
+    margin-bottom: var(--space-6);
+  }
+  .btnWhatsAppLargo {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 0.875rem;
+    white-space: normal;
+    line-height: 1.3;
+    gap: 8px;
+  }
+}
+

@@ -826,3 +826,15 @@
   background-color: var(--color-primary-950);
 }
 
+@media (max-width: 640px) {
+  .headerRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .btnNew {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+

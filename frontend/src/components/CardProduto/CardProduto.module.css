@@ -396,3 +396,34 @@
   transform: scale(1.06);
   box-shadow: 0 4px 14px rgba(37, 211, 102, 0.45);
 }
+
+@media (max-width: 640px) {
+  .actionsRow {
+    gap: 6px;
+  }
+  .btnBuyNow {
+    font-size: 0.8125rem;
+    padding: 8px 12px;
+    min-height: 38px;
+  }
+  .btnCart {
+    width: 38px;
+    height: 38px;
+  }
+}
+
+@media (max-width: 380px) {
+  .actionsRow {
+    gap: 4px;
+  }
+  .btnBuyNow {
+    font-size: 0.75rem;
+    padding: 7px 8px;
+    letter-spacing: -0.01em;
+  }
+  .btnCart {
+    width: 36px;
+    height: 36px;
+  }
+}
+

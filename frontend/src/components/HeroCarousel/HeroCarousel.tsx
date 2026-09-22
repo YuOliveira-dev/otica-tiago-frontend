@@ -1,24 +1,31 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { CheckCircle2, Award, Sparkles } from 'lucide-react';
+import { CheckCircle2, Award, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
 import { getActiveBanners, INITIAL_BANNERS } from '../../services/banner.service';
 import { Banner } from '../../types';
 import styles from './HeroCarousel.module.css';
+
+const SLIDE_DURATION = 6000;
 
 export function HeroCarousel() {
   const [slides, setSlides] = useState<Banner[]>(INITIAL_BANNERS);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
-  // Load active banners from banner service and sync on updates
   useEffect(() => {
     async function loadData() {
-      const data = await getActiveBanners();
-      if (data && data.length > 0) {
-        setSlides(data);
+      try {
+        const data = await getActiveBanners();
+        if (data && data.length > 0) {
+          setSlides(data);
+          setCurrentSlide(0);
+        }
+      } catch (err) {
+        console.error(err);
       }
     }
 
@@ -37,37 +44,52 @@ export function HeroCarousel() {
     };
   }, []);
 
-  // Safe active slide index if slides count changes
-  const activeIndex = currentSlide >= slides.length ? 0 : currentSlide;
+  const totalSlides = slides.length;
+  const activeIndex = currentSlide >= totalSlides ? 0 : currentSlide;
 
-  // Auto transition every 5 seconds (5000ms) as requested
   useEffect(() => {
-    if (isPaused || slides.length <= 1) return;
+    if (isPaused || totalSlides <= 1) return;
 
-    timerRef.current = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 5000);
+    const timer = setTimeout(() => {
+      setCurrentSlide((prev) => (prev + 1) % totalSlides);
+    }, SLIDE_DURATION);
 
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, [isPaused, slides.length]);
+    return () => clearTimeout(timer);
+  }, [currentSlide, isPaused, totalSlides]);
 
-  const resetTimer = () => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = setInterval(() => {
-        setCurrentSlide((prev) => (prev + 1) % slides.length);
-      }, 5000);
-    }
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % totalSlides);
+  };
+
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + totalSlides) % totalSlides);
   };
 
   const goToSlide = (index: number) => {
     setCurrentSlide(index);
-    resetTimer();
   };
 
-  if (slides.length === 0) return null;
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const minSwipeDistance = 50;
+    if (distance > minSwipeDistance) {
+      nextSlide();
+    } else if (distance < -minSwipeDistance) {
+      prevSlide();
+    }
+  };
+
+  if (totalSlides === 0) return null;
 
   return (
     <section className={styles.heroSection}>
@@ -75,8 +97,10 @@ export function HeroCarousel() {
         className={styles.bannerWrapper}
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
       >
-        {/* Slides Track */}
         <div className={styles.slidesTrack}>
           {slides.map((slide, index) => {
             const isActive = index === activeIndex;
@@ -86,16 +110,11 @@ export function HeroCarousel() {
                 className={`${styles.slide} ${isActive ? styles.slideActive : ''}`}
                 aria-hidden={!isActive}
               >
-                {/* Background Luxury Gradient from Design System */}
                 <div className={styles.slideBg} />
-
-                {/* Decorative Brand Sparkles */}
                 <div className={styles.sparkleOne} />
                 <div className={styles.sparkleTwo} />
 
-                {/* Main Content Layout (1330x400 standard) */}
                 <div className={styles.slideContent}>
-                  {/* Left Column: Headlines and CTA */}
                   <div className={styles.leftCol}>
                     <div className={styles.eyebrow}>
                       <Sparkles size={13} />
@@ -111,7 +130,6 @@ export function HeroCarousel() {
                     </div>
                   </div>
 
-                  {/* Center Column: Model / Eyewear Visual */}
                   <div className={styles.centerCol}>
                     <div className={styles.modelFrame}>
                       <img
@@ -127,7 +145,6 @@ export function HeroCarousel() {
                     </div>
                   </div>
 
-                  {/* Right Column: Accreditation Badge & Brand */}
                   <div className={styles.rightCol}>
                     <div className={styles.trustBadge}>
                       <div className={styles.badgeIconArea}>
@@ -153,8 +170,28 @@ export function HeroCarousel() {
           })}
         </div>
 
-        {/* Bottom Pagination Dots (Matching Reference Pill Layout) */}
-        {slides.length > 1 && (
+        {totalSlides > 1 && (
+          <>
+            <button
+              type="button"
+              className={`${styles.navArrow} ${styles.navArrowPrev}`}
+              onClick={prevSlide}
+              aria-label="Slide anterior"
+            >
+              <ChevronLeft size={22} />
+            </button>
+            <button
+              type="button"
+              className={`${styles.navArrow} ${styles.navArrowNext}`}
+              onClick={nextSlide}
+              aria-label="Próximo slide"
+            >
+              <ChevronRight size={22} />
+            </button>
+          </>
+        )}
+
+        {totalSlides > 1 && (
           <div
             className={styles.dotsContainer}
             role="tablist"

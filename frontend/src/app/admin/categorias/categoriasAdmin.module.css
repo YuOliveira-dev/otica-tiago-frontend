@@ -69,23 +69,32 @@
   padding-bottom: 1rem;
 }
 
+.catInfo {
+  min-width: 0;
+  flex: 1;
+}
+
 .catInfo h3 {
   font-size: 1.15rem;
   font-weight: 700;
   color: #0f172a;
   margin-bottom: 0.25rem;
+  word-break: break-word;
 }
 
 .catSlug {
   font-size: 0.75rem;
   color: #64748b;
   font-family: monospace;
+  word-break: break-all;
+  display: block;
 }
 
 .catActions {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  flex-shrink: 0;
 }
 
 .iconBtn {
@@ -317,3 +326,24 @@
     grid-template-columns: 1fr;
   }
 }
+
+@media (max-width: 640px) {
+  .headerRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .btnNew {
+    width: 100%;
+    justify-content: center;
+  }
+  .categoryCard {
+    padding: 1rem;
+  }
+  .addSubRow {
+    flex-direction: column;
+  }
+  .btnAddSub {
+    width: 100%;
+  }
+}
+
