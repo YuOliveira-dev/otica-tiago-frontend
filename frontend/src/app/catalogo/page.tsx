@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { SlidersHorizontal, RotateCcw, ChevronRight, Search } from 'lucide-react';
+import { SlidersHorizontal, RotateCcw, ChevronRight, Search, Loader2 } from 'lucide-react';
 import { WhatsAppIcon } from '../../components/Icons';
 import { ProductCard } from '../../components/CardProduto/CardProduto';
 import { getProducts, getCategories } from '../../services/catalog.service';
@@ -231,8 +231,9 @@ function CatalogoContent() {
 
           {/* Loading or Empty State */}
           {isLoading ? (
-            <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--color-text-muted)' }}>
-              Carregando catálogo da TS EYEWEAR...
+            <div style={{ textAlign: 'center', padding: '80px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '14px', color: 'var(--color-text-muted)' }}>
+              <Loader2 size={36} className="animate-spin" color="var(--color-accent, #c5a96f)" />
+              <span>Carregando catálogo do banco de dados...</span>
             </div>
           ) : products.length === 0 ? (
             <div className={styles.emptyState}>

@@ -10,6 +10,7 @@ import {
   PlusCircle,
   Tag,
   ArrowRight,
+  Loader2,
 } from 'lucide-react';
 import { getDashboardMetrics, getAdminProducts } from '../../../services/catalog.service';
 import { DashboardMetrics, Product } from '../../../types';
@@ -59,7 +60,7 @@ export default function DashboardPage() {
         <div className={styles.kpiCard}>
           <div className={styles.kpiContent}>
             <h3>Total de Modelos</h3>
-            <span className={styles.kpiNumber}>{isLoading ? '...' : metrics.totalProducts}</span>
+            <span className={styles.kpiNumber}>{isLoading ? <Loader2 size={20} className="animate-spin" /> : metrics.totalProducts}</span>
           </div>
           <div className={`${styles.kpiIcon} ${styles.iconTotal}`}>
             <Glasses size={24} />
@@ -69,7 +70,7 @@ export default function DashboardPage() {
         <div className={styles.kpiCard}>
           <div className={styles.kpiContent}>
             <h3>Modelos Ativos</h3>
-            <span className={styles.kpiNumber}>{isLoading ? '...' : metrics.activeProducts}</span>
+            <span className={styles.kpiNumber}>{isLoading ? <Loader2 size={20} className="animate-spin" /> : metrics.activeProducts}</span>
           </div>
           <div className={`${styles.kpiIcon} ${styles.iconActive}`}>
             <Eye size={24} />
@@ -79,7 +80,7 @@ export default function DashboardPage() {
         <div className={styles.kpiCard}>
           <div className={styles.kpiContent}>
             <h3>Ocultos / Rascunho</h3>
-            <span className={styles.kpiNumber}>{isLoading ? '...' : metrics.hiddenProducts}</span>
+            <span className={styles.kpiNumber}>{isLoading ? <Loader2 size={20} className="animate-spin" /> : metrics.hiddenProducts}</span>
           </div>
           <div className={`${styles.kpiIcon} ${styles.iconHidden}`}>
             <EyeOff size={24} />
@@ -90,7 +91,7 @@ export default function DashboardPage() {
           <div className={styles.kpiContent}>
             <h3>Atenção ao Estoque</h3>
             <span className={styles.kpiNumber}>
-              {isLoading ? '...' : metrics.lowStock + metrics.outOfStock}
+              {isLoading ? <Loader2 size={20} className="animate-spin" /> : metrics.lowStock + metrics.outOfStock}
             </span>
           </div>
           <div className={`${styles.kpiIcon} ${styles.iconAlert}`}>
@@ -152,7 +153,23 @@ export default function DashboardPage() {
               </tr>
             </thead>
             <tbody>
-              {products.slice(0, 8).map((prod) => {
+              {isLoading ? (
+                <tr>
+                  <td colSpan={7} style={{ textAlign: 'center', padding: '3.5rem 1rem' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '10px', color: '#64748b' }}>
+                      <Loader2 size={32} className="animate-spin" color="var(--color-accent, #c5a96f)" />
+                      <span>Carregando dados do banco de dados...</span>
+                    </div>
+                  </td>
+                </tr>
+              ) : products.length === 0 ? (
+                <tr>
+                  <td colSpan={7} style={{ textAlign: 'center', padding: '2rem' }}>
+                    Nenhum produto cadastrado.
+                  </td>
+                </tr>
+              ) : (
+                products.slice(0, 8).map((prod) => {
                 const totalStock = getTotalStock(prod);
                 const mediaList = prod.media || prod.midias || [];
                 const thumb = mediaList.find((m) => m.isPrimary || m.principal) || mediaList[0];
@@ -234,7 +251,7 @@ export default function DashboardPage() {
                     </td>
                   </tr>
                 );
-              })}
+              }))}
             </tbody>
           </table>
         </div>

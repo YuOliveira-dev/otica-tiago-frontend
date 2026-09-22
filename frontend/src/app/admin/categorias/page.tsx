@@ -208,8 +208,9 @@ export default function AdminCategoriasPage() {
 
       {/* Categories Grid */}
       {isLoading ? (
-        <div style={{ textAlign: 'center', padding: '4rem' }}>
-          <p style={{ color: '#64748b' }}>Carregando categorias...</p>
+        <div style={{ textAlign: 'center', padding: '5rem 1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px', color: '#64748b' }}>
+          <Loader2 size={32} className="animate-spin" color="var(--color-accent, #c5a96f)" />
+          <span>Carregando categorias do banco de dados...</span>
         </div>
       ) : (
         <div className={styles.categoryGrid}>

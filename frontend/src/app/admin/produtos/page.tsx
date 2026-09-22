@@ -260,8 +260,11 @@ export default function AdminProdutosPage() {
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan={7} style={{ textAlign: 'center', padding: '3rem' }}>
-                    Carregando catálogo de produtos...
+                  <td colSpan={7} style={{ textAlign: 'center', padding: '4rem 1rem' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px', color: 'var(--color-text-muted)' }}>
+                      <Loader2 size={32} className="animate-spin" color="var(--color-accent, #c5a96f)" />
+                      <span>Carregando produtos do banco de dados...</span>
+                    </div>
                   </td>
                 </tr>
               ) : filteredProducts.length === 0 ? (

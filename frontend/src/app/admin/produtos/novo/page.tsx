@@ -468,8 +468,9 @@ function ProductForm() {
 
   if (isLoading) {
     return (
-      <div style={{ textAlign: 'center', padding: '5rem' }}>
-        <p style={{ color: '#64748b' }}>Carregando dados do produto...</p>
+      <div style={{ textAlign: 'center', padding: '6rem 1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px', color: '#64748b' }}>
+        <Loader2 size={36} className="animate-spin" color="var(--color-accent, #c5a96f)" />
+        <span>Carregando dados do produto do banco de dados...</span>
       </div>
     );
   }

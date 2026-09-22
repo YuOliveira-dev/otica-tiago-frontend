@@ -194,6 +194,18 @@ export default function AdminBannersPage() {
   // ==========================================
   // BANNERS HERO HANDLERS
   // ==========================================
+  const handleTabChange = async (tab: 'hero' | 'categories') => {
+    if (tab === activeTab) return;
+    setActiveTab(tab);
+    if (tab === 'hero') {
+      setIsLoadingBanners(true);
+      await loadBanners();
+    } else {
+      setIsLoadingCategories(true);
+      await Promise.all([loadCategories(), loadSectionConfig()]);
+    }
+  };
+
   const openNewBannerModal = () => {
     setEditBannerId(null);
     setTitle('');
@@ -594,22 +606,26 @@ export default function AdminBannersPage() {
       <div className={styles.tabsRow}>
         <button
           type="button"
-          onClick={() => setActiveTab('hero')}
+          onClick={() => handleTabChange('hero')}
           className={`${styles.tabBtn} ${activeTab === 'hero' ? styles.tabBtnActive : ''}`}
         >
           <Sliders size={18} />
           <span>Banners Hero (Carrossel)</span>
-          <span className={styles.tabBadge}>{banners.length}</span>
+          <span className={styles.tabBadge}>
+            {isLoadingBanners ? <Loader2 size={12} className="animate-spin" /> : banners.length}
+          </span>
         </button>
 
         <button
           type="button"
-          onClick={() => setActiveTab('categories')}
+          onClick={() => handleTabChange('categories')}
           className={`${styles.tabBtn} ${activeTab === 'categories' ? styles.tabBtnActive : ''}`}
         >
           <LayoutGrid size={18} />
           <span>Cards de Categorias (Home)</span>
-          <span className={styles.tabBadge}>{categoryCards.length}</span>
+          <span className={styles.tabBadge}>
+            {isLoadingCategories ? <Loader2 size={12} className="animate-spin" /> : categoryCards.length}
+          </span>
         </button>
       </div>
 
@@ -655,8 +671,9 @@ export default function AdminBannersPage() {
 
           {/* Grid de Banners Cadastrados */}
           {isLoadingBanners ? (
-            <div style={{ padding: '40px 0', textAlign: 'center', color: 'var(--color-text-muted)' }}>
-              Carregando banners da TS EYEWEAR...
+            <div style={{ padding: '60px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px', color: 'var(--color-text-muted)' }}>
+              <Loader2 size={32} className="animate-spin" color="var(--color-accent, #c5a96f)" />
+              <span>Carregando banners do banco de dados...</span>
             </div>
           ) : banners.length === 0 ? (
             <div style={{ padding: '40px 0', textAlign: 'center', color: 'var(--color-text-muted)' }}>
@@ -856,8 +873,9 @@ export default function AdminBannersPage() {
 
           {/* Grid de Cards de Categoria Cadastrados */}
           {isLoadingCategories ? (
-            <div style={{ padding: '40px 0', textAlign: 'center', color: 'var(--color-text-muted)' }}>
-              Carregando cards de categoria da vitrine...
+            <div style={{ padding: '60px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px', color: 'var(--color-text-muted)' }}>
+              <Loader2 size={32} className="animate-spin" color="var(--color-accent, #c5a96f)" />
+              <span>Carregando cards de categoria do banco de dados...</span>
             </div>
           ) : categoryCards.length === 0 ? (
             <div style={{ padding: '40px 0', textAlign: 'center', color: 'var(--color-text-muted)' }}>

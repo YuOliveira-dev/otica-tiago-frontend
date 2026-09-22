@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Heart, Trash2, ArrowRight, Truck, ShieldCheck } from 'lucide-react';
+import { Heart, Trash2, ArrowRight, Truck, ShieldCheck, Loader2 } from 'lucide-react';
 import { WhatsAppIcon } from '../../components/Icons';
 import { ProductCard } from '../../components/CardProduto/CardProduto';
 import { getProducts } from '../../services/catalog.service';
@@ -125,8 +125,9 @@ export default function FavoritosPage() {
 
       {/* Content */}
       {isLoading ? (
-        <div style={{ textAlign: 'center', padding: '4rem' }}>
-          <p style={{ color: 'var(--color-text-muted)' }}>Carregando seus favoritos...</p>
+        <div style={{ textAlign: 'center', padding: '5rem 1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '14px', color: 'var(--color-text-muted)' }}>
+          <Loader2 size={36} className="animate-spin" color="var(--color-accent, #c5a96f)" />
+          <span>Carregando favoritos do banco de dados...</span>
         </div>
       ) : products.length === 0 ? (
         <div className={styles.emptyState}>
