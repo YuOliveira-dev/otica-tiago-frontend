@@ -35,7 +35,7 @@ export const INITIAL_BANNERS: Banner[] = [
       'Envie sua receita médica direto pelo WhatsApp. Orientação especializada no melhor índice de refração para o seu grau sem sair de casa.',
     ctaText: 'FALAR COM CONSULTOR',
     ctaUrl:
-      'https://wa.me/5584996160968?text=Ol%C3%A1%2C%20TS%20EYEWEAR!%20Gostaria%20de%20consultoria%20personalizada%20para%20minhas%20lentes%20de%20grau.',
+      'https://wa.me/5511987729981?text=Ol%C3%A1%2C%20TS%20EYEWEAR!%20Gostaria%20de%20consultoria%20personalizada%20para%20minhas%20lentes%20de%20grau.',
     badgeTitle: 'Atendimento 100% Online',
     badgeSub: 'Suporte Óptico Especializado',
     imageUrl: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?auto=format&fit=crop&w=1330&h=400&q=80',

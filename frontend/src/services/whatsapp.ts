@@ -39,12 +39,15 @@ export function generateWhatsAppLink({
   tipo,
   produtosFavoritos,
 }: GenerateWhatsAppParams): string {
-  const activePhone = phone || numero || process.env.NEXT_PUBLIC_WHATSAPP_NUMERO || '84996160968';
+  const activePhone = phone || numero || process.env.NEXT_PUBLIC_WHATSAPP_NUMERO || '11987729981';
   const activeProduct = product || produto;
   const activeType = type || tipo || 'inquiry';
   const activeFavorites = favoriteProducts || produtosFavoritos || [];
 
-  const cleanedPhone = activePhone.replace(/\D/g, '');
+  const digitsOnly = activePhone.replace(/\D/g, '');
+  const cleanedPhone = digitsOnly.startsWith('55') && digitsOnly.length > 11
+    ? digitsOnly.slice(2)
+    : digitsOnly;
   let message = '';
 
   const prodTitle = activeProduct?.title || activeProduct?.titulo || '';

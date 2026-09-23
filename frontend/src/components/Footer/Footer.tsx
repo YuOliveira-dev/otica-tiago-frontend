@@ -57,7 +57,7 @@ export function Footer() {
                 <WhatsAppIcon size={18} style={{ color: 'var(--color-whatsapp)', marginTop: '2px' }} />
                 <div>
                   <strong>WhatsApp Oficial:</strong>
-                  <div>(84) 99616-0968</div>
+                  <div>(11) 98772-9981</div>
                 </div>
               </div>
               <div className={styles.contactRow}>
