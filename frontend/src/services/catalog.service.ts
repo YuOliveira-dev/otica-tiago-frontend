@@ -205,13 +205,22 @@ export async function getProducts(
 
   if (categoryFilter && categoryFilter !== 'todas' && categoryFilter !== 'all') {
     const term = categoryFilter.toLowerCase();
-    result = result.filter(
-      (p) =>
-        p.categoryId === categoryFilter ||
-        p.categoriaId === categoryFilter ||
-        (p.categoryName && p.categoryName.toLowerCase().includes(term)) ||
-        (p.categoriaNome && p.categoriaNome.toLowerCase().includes(term))
-    );
+    const cleanTerm = term.replace(/-/g, ' ');
+    result = result.filter((p) => {
+      const catId = (p.categoryId || p.categoriaId || '').toLowerCase();
+      const catName = (p.categoryName || p.categoriaNome || '').toLowerCase();
+      return (
+        catId === term ||
+        catId === cleanTerm ||
+        catName.includes(term) ||
+        catName.includes(cleanTerm) ||
+        (term.includes('grau') && catName.includes('grau')) ||
+        ((term.includes('sol') || term.includes('solar')) && catName.includes('sol')) ||
+        (term.includes('clip') && catName.includes('clip')) ||
+        (term === 'outlet' && (p.isOutlet || p.outlet)) ||
+        (term === 'novidades' && (p.isNew || p.novidade))
+      );
+    });
   }
 
   if (genderFilter && genderFilter !== 'todos' && genderFilter !== 'all') {

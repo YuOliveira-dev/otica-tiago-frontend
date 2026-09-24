@@ -6,6 +6,11 @@
    Global Base Styles
    ========================================================================== */
 
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: calc(var(--header-height) + 24px);
+}
+
 body {
   font-family: var(--font-family-body);
   color: var(--color-text-body);

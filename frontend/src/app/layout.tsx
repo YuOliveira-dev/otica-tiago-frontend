@@ -1,8 +1,10 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import './globals.css';
 import { Header } from '../components/Header/Header';
 import { Footer } from '../components/Footer/Footer';
 import { WhatsAppFloat } from '../components/WhatsAppFloat/WhatsAppFloat';
+import { ScrollToTop } from '../components/ScrollToTop/ScrollToTop';
 
 export const metadata: Metadata = {
   title: 'TS EYEWEAR | Catálogo Online - Óculos de Grau, Sol e Clip-On',
@@ -76,6 +78,9 @@ export default function RootLayout({
         />
       </head>
       <body>
+        <Suspense fallback={null}>
+          <ScrollToTop />
+        </Suspense>
         <Header />
         <main>{children}</main>
         <WhatsAppFloat />
