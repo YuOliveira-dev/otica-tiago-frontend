@@ -1,5 +1,5 @@
 import { Banner } from '../types';
-import { getAdminToken } from './auth.service';
+import { getAdminToken, getAdminUser } from './auth.service';
 
 export const INITIAL_BANNERS: Banner[] = [
   {
@@ -69,12 +69,12 @@ function notifySubscribers() {
 
 export async function getBanners(): Promise<Banner[]> {
   const baseUrl = getApiBaseUrl();
-  const token = getAdminToken();
+  const isAdmin = !!getAdminUser();
 
   try {
-    const url = token ? `${baseUrl}/admin/banners` : `${baseUrl}/banners`;
+    const url = isAdmin ? `${baseUrl}/admin/banners` : `${baseUrl}/banners`;
     const res = await fetch(url, {
-      headers: token ? getAuthHeaders() : { Accept: 'application/json' },
+      headers: isAdmin ? getAuthHeaders() : { Accept: 'application/json' },
       credentials: 'include',
       cache: 'no-store',
     });

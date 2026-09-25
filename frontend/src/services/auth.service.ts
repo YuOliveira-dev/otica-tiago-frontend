@@ -110,7 +110,7 @@ export async function logoutAdmin(): Promise<void> {
 }
 
 export function isAdminAuthenticated(): boolean {
-  return !!(inMemoryToken && inMemoryAdmin);
+  return !!inMemoryAdmin;
 }
 
 export function getAdminUser(): AdminUser | null {

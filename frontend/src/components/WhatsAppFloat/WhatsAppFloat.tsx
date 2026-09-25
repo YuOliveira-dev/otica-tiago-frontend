@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { X, Sparkles } from 'lucide-react';
 import { WhatsAppIcon } from '../Icons';
 import { generateWhatsAppLink } from '../../services/whatsapp';
@@ -8,6 +9,7 @@ import styles from './WhatsAppFloat.module.css';
 
 export function WhatsAppFloat() {
   const [showTooltip, setShowTooltip] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -17,6 +19,10 @@ export function WhatsAppFloat() {
   }, []);
 
   const whatsAppLink = generateWhatsAppLink({ type: 'inquiry' });
+
+  if (pathname?.startsWith('/admin')) {
+    return null;
+  }
 
   return (
     <div className={styles.container}>

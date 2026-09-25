@@ -65,6 +65,10 @@ export function Header() {
 
   const whatsAppHeaderLink = generateWhatsAppLink({ type: 'inquiry' });
 
+  if (pathname?.startsWith('/admin')) {
+    return null;
+  }
+
   return (
     <>
       {/* Top Bar Oficial de Avisos */}

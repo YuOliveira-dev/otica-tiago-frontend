@@ -1,4 +1,7 @@
+'use client';
+
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Mail, Clock, ShieldCheck, Truck, RotateCcw, Ruler, Lock, HelpCircle, Glasses } from 'lucide-react';
 import { WhatsAppIcon } from '../Icons';
 import { generateWhatsAppLink } from '../../services/whatsapp';
@@ -24,7 +27,12 @@ function InstagramIcon({ size = 16 }: { size?: number }) {
 }
 
 export function Footer() {
+  const pathname = usePathname();
   const whatsAppGeneralLink = generateWhatsAppLink({ type: 'inquiry' });
+
+  if (pathname?.startsWith('/admin')) {
+    return null;
+  }
 
   return (
     <footer className={styles.footer}>

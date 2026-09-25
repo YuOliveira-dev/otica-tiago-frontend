@@ -7,6 +7,7 @@ import { WhatsAppFloat } from '../components/WhatsAppFloat/WhatsAppFloat';
 import { ScrollToTop } from '../components/ScrollToTop/ScrollToTop';
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://www.tsjoculos.com'),
   title: 'TS EYEWEAR | Catálogo Online - Óculos de Grau, Sol e Clip-On',
   description:
     'Há 5 anos transformando sua visão com muito estilo. Armações de alta tecnologia, lentes com proteção UV400 certificada e Frete Grátis para todo o Brasil.',
@@ -23,7 +24,7 @@ export const metadata: Metadata = {
     title: 'TS EYEWEAR | Sua Visão em Boas Mãos. Seu Estilo com Nitidez.',
     description:
       'Catálogo online oficial TS EYEWEAR. Produtos 100% originais com garantia, consultoria de estilo no WhatsApp e Frete Grátis para todo o Brasil.',
-    url: 'https://tseyewear.com.br',
+    url: 'https://www.tsjoculos.com',
     siteName: 'TS EYEWEAR',
     locale: 'pt_BR',
     type: 'website',
@@ -55,8 +56,8 @@ export default function RootLayout({
               '@type': 'OnlineStore',
               name: 'TS EYEWEAR',
               legalName: 'TS comércio de óculos e negócios Ltda',
-              url: 'https://tseyewear.com.br',
-              logo: 'https://tseyewear.com.br/assets/brand/logo.svg',
+              url: 'https://www.tsjoculos.com',
+              logo: 'https://www.tsjoculos.com/logo.png',
               description:
                 'Loja online especializada em armações de grau, óculos de sol e saúde visual com 5 anos de atuação.',
               email: 'tnoculos05.07@gmail.com',
