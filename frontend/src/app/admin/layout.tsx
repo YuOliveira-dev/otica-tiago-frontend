@@ -38,7 +38,6 @@ export default function AdminLayout({
   const isLoginPage = pathname === '/admin';
 
   useEffect(() => {
-    // Se for a página de login (/admin), não precisa checar permissão no layout
     if (isLoginPage) {
       setIsAuthChecked(true);
       return;
@@ -46,7 +45,6 @@ export default function AdminLayout({
 
     let isMounted = true;
 
-    // A cada decisão/navegação no site, busca no service para bater com o token no backend
     verifyAdminSession().then((isValid) => {
       if (!isMounted) return;
 
@@ -59,20 +57,11 @@ export default function AdminLayout({
       }
     });
 
-    const handleAuthChange = (e: any) => {
-      if (!e.detail?.isAuthenticated && isMounted) {
-        setIsAuthChecked(false);
-        router.replace('/admin');
-      }
-    };
-
-    window.addEventListener('admin:auth-changed', handleAuthChange);
-
     return () => {
       isMounted = false;
-      window.removeEventListener('admin:auth-changed', handleAuthChange);
     };
-  }, [pathname, isLoginPage, router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname, isLoginPage]);
 
   // Se estiver na tela de login (/admin), renderiza diretamente o conteúdo sem sidebar
   if (isLoginPage) {

@@ -5,6 +5,7 @@ import { Header } from '../components/Header/Header';
 import { Footer } from '../components/Footer/Footer';
 import { WhatsAppFloat } from '../components/WhatsAppFloat/WhatsAppFloat';
 import { ScrollToTop } from '../components/ScrollToTop/ScrollToTop';
+import { PublicShell } from '../components/PublicShell/PublicShell';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.tsjoculos.com'),
@@ -82,11 +83,16 @@ export default function RootLayout({
         <Suspense fallback={null}>
           <ScrollToTop />
         </Suspense>
-        <Header />
+        <PublicShell>
+          <Header />
+        </PublicShell>
         <main>{children}</main>
-        <WhatsAppFloat />
-        <Footer />
+        <PublicShell>
+          <WhatsAppFloat />
+          <Footer />
+        </PublicShell>
       </body>
     </html>
   );
 }
+
