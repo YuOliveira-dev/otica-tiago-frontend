@@ -10,6 +10,8 @@ import {
   Glasses,
   CheckCircle,
   Loader2,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import {
   getAdminProducts,
@@ -31,6 +33,10 @@ export default function AdminProdutosPage() {
   const [statusFilter, setStatusFilter] = useState<string>('TODOS');
   const [categoryFilter, setCategoryFilter] = useState<string>('TODAS');
   const [stockFilter, setStockFilter] = useState<string>('TODOS');
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState<number | 'all'>(50);
 
   // Friendly Action Modal State
   const [modalConfig, setModalConfig] = useState<{
@@ -173,6 +179,24 @@ export default function AdminProdutosPage() {
     return true;
   });
 
+  // Reset to page 1 whenever filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, statusFilter, categoryFilter, stockFilter]);
+
+  const totalPages =
+    itemsPerPage === 'all'
+      ? 1
+      : Math.max(1, Math.ceil(filteredProducts.length / (itemsPerPage as number)));
+
+  const paginatedProducts =
+    itemsPerPage === 'all'
+      ? filteredProducts
+      : filteredProducts.slice(
+          (currentPage - 1) * (itemsPerPage as number),
+          currentPage * (itemsPerPage as number)
+        );
+
   const formatPrice = (val?: number) =>
     (val ?? 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
@@ -274,7 +298,7 @@ export default function AdminProdutosPage() {
                   </td>
                 </tr>
               ) : (
-                filteredProducts.map((prod) => {
+                paginatedProducts.map((prod) => {
                   const mediaList = prod.media || prod.midias || [];
                   const thumb = mediaList.find((m) => m.isPrimary || m.principal) || mediaList[0];
                   const variations = prod.variations || prod.variacoes || [];
@@ -444,6 +468,77 @@ export default function AdminProdutosPage() {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination Bar */}
+        {filteredProducts.length > 0 && (
+          <div className={styles.paginationBar}>
+            <div className={styles.paginationInfo}>
+              <span>
+                Exibindo{' '}
+                <strong>
+                  {itemsPerPage === 'all'
+                    ? `1–${filteredProducts.length}`
+                    : `${(currentPage - 1) * (itemsPerPage as number) + 1}–${Math.min(
+                        currentPage * (itemsPerPage as number),
+                        filteredProducts.length
+                      )}`}
+                </strong>{' '}
+                de <strong>{filteredProducts.length}</strong> modelos
+              </span>
+
+              <div className={styles.pageSizeSelector}>
+                <span>Itens por página:</span>
+                <select
+                  value={itemsPerPage}
+                  onChange={(e) => {
+                    const val = e.target.value === 'all' ? 'all' : Number(e.target.value);
+                    setItemsPerPage(val);
+                    setCurrentPage(1);
+                  }}
+                  className={styles.pageSizeSelect}
+                >
+                  <option value={25}>25</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                  <option value={200}>200</option>
+                  <option value="all">Todos ({filteredProducts.length})</option>
+                </select>
+              </div>
+            </div>
+
+            {totalPages > 1 && (
+              <div className={styles.paginationControls}>
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className={styles.btnPagination}
+                  title="Página anterior"
+                >
+                  <ChevronLeft size={16} />
+                  <span>Anterior</span>
+                </button>
+
+                <div className={styles.pageIndicator}>
+                  <span>
+                    Página <strong>{currentPage}</strong> de <strong>{totalPages}</strong>
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className={styles.btnPagination}
+                  title="Próxima página"
+                >
+                  <span>Próxima</span>
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
       {/* Friendly Action Confirmation & Feedback Modal */}
       <ActionModal

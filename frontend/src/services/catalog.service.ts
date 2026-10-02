@@ -156,7 +156,7 @@ export async function getProducts(
       params.set('ordenar', (filters.sortBy || filters.ordenar)!);
     }
     if (!params.has('limite')) {
-      params.set('limite', '50');
+      params.set('limite', '2000');
     }
 
     const qs = params.toString();
@@ -353,7 +353,7 @@ export async function getAdminProducts(): Promise<Product[]> {
   try {
     const baseUrl = getApiBaseUrl();
     const headers = getAuthHeaders();
-    const res = await fetch(`${baseUrl}/admin/produtos?limite=100`, {
+    const res = await fetch(`${baseUrl}/admin/produtos?limite=2000`, {
       headers,
       credentials: 'include',
       cache: 'no-store',
