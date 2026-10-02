@@ -349,6 +349,66 @@ export async function getCategories(): Promise<Category[]> {
   return categoriesState;
 }
 
+export interface AdminProductsPaginatedResponse {
+  produtos: Product[];
+  paginacao: {
+    total: number;
+    pagina: number;
+    limite: number | 'all';
+    totalPaginas: number;
+  };
+}
+
+export async function getAdminProductsPaginated(params?: {
+  pagina?: number;
+  limite?: number | 'all';
+  busca?: string;
+  categoria?: string;
+  status?: string;
+  estoque?: string;
+}): Promise<AdminProductsPaginatedResponse> {
+  const query = new URLSearchParams();
+  query.set('pagina', String(params?.pagina || 1));
+  query.set('limite', String(params?.limite ?? 50));
+  if (params?.busca && params.busca.trim()) query.set('busca', params.busca.trim());
+  if (params?.categoria && params.categoria !== 'TODAS') query.set('categoria', params.categoria);
+  if (params?.status && params.status !== 'TODOS') query.set('status', params.status);
+  if (params?.estoque && params.estoque !== 'TODOS') query.set('estoque', params.estoque);
+
+  try {
+    const baseUrl = getApiBaseUrl();
+    const headers = getAuthHeaders();
+    const res = await fetch(`${baseUrl}/admin/produtos?${query.toString()}`, {
+      headers,
+      credentials: 'include',
+      cache: 'no-store',
+    });
+
+    if (res.ok) {
+      const json = await res.json();
+      if (json.sucesso && Array.isArray(json.dados)) {
+        const limitNum = typeof params?.limite === 'number' ? params.limite : 50;
+        return {
+          produtos: json.dados.map(mapBackendProductToFrontend),
+          paginacao: json.paginacao || {
+            total: json.dados.length,
+            pagina: params?.pagina || 1,
+            limite: params?.limite || 50,
+            totalPaginas: Math.ceil(json.dados.length / limitNum) || 1,
+          },
+        };
+      }
+    }
+  } catch (err) {
+    console.warn('Falha ao carregar produtos paginados da API admin:', err);
+  }
+
+  return {
+    produtos: [],
+    paginacao: { total: 0, pagina: 1, limite: 50, totalPaginas: 1 },
+  };
+}
+
 export async function getAdminProducts(): Promise<Product[]> {
   try {
     const baseUrl = getApiBaseUrl();
