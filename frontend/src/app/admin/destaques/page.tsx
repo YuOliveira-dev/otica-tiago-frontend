@@ -52,15 +52,15 @@ export default function DestaquesAdminPage() {
     setModalConfig((prev) => ({ ...prev, isOpen: false }));
   };
 
-  const loadData = async () => {
-    setIsLoading(true);
+  const loadData = async (showLoading = true) => {
+    if (showLoading) setIsLoading(true);
     try {
       const all = await getAdminProducts();
       setProducts(all);
     } catch (err) {
       console.error('Erro ao carregar produtos:', err);
     } finally {
-      setIsLoading(false);
+      if (showLoading) setIsLoading(false);
     }
   };
 
@@ -161,30 +161,22 @@ export default function DestaquesAdminPage() {
     if (isRemovingRef.current) return;
     isRemovingRef.current = true;
     setIsRemoving(true);
-    closeModal();
-    setProducts((prev) =>
-      prev.map((p) =>
-        p.id === product.id
-          ? { ...p, featuredHome: false, destaqueHome: false }
-          : p
-      )
-    );
 
     try {
       await toggleProductHighlight(product.id, {
         destaqueHome: false,
       });
-      await loadData();
+      await loadData(false);
       setModalConfig({
         isOpen: true,
         type: 'success',
         title: 'Modelo Removido',
-        message: `"${product.title || product.titulo}" foi removido da vitrine da página inicial.`,
+        message: `"${product.title || product.titulo}" foi removido da seção Mais Desejados com sucesso.`,
         confirmText: 'Entendido',
         onConfirm: closeModal,
       });
     } catch {
-      await loadData();
+      await loadData(false);
       setModalConfig({
         isOpen: true,
         type: 'danger',
@@ -213,8 +205,9 @@ export default function DestaquesAdminPage() {
     });
   };
 
-  const formatPrice = (val: number) =>
-    val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  // formatPrice OCULTO TEMPORARIAMENTE — para reativar, descomente:
+  // const formatPrice = (val: number) =>
+  //   val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
   return (
     <div className={styles.container}>
@@ -356,7 +349,9 @@ export default function DestaquesAdminPage() {
                   </div>
 
                   <div className={styles.priceRow}>
+                    {/* Preço ocultado temporariamente:
                     <span className={styles.price}>{formatPrice(price)}</span>
+                    */}
                     <Link
                       href={`/produto/${prod.id}`}
                       target="_blank"
@@ -372,7 +367,7 @@ export default function DestaquesAdminPage() {
                       }}
                       title="Ver na loja pública"
                     >
-                      <span>Ver</span>
+                      <span>Ver produto</span>
                       <ExternalLink size={12} />
                     </Link>
                   </div>

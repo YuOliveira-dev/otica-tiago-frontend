@@ -198,11 +198,17 @@ export function ActionModal({
             className={`${styles.btnConfirm} ${getConfirmBtnClass()} ${
               !isConfirmType ? styles.btnSingle : ''
             }`}
-            onClick={onConfirm || onCancel || onClose}
+            onClick={isLoading ? undefined : (onConfirm || onCancel || onClose)}
             disabled={isLoading}
             autoFocus
           >
-            {isLoading && <Loader2 size={16} className="animate-spin" />}
+            {isLoading && (
+              <Loader2
+                size={16}
+                className="animate-spin"
+                style={{ animation: 'spin 1s linear infinite' }}
+              />
+            )}
             <span>{defaultConfirmText}</span>
           </button>
         </div>
