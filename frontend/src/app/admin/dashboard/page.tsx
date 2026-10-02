@@ -207,7 +207,6 @@ export default function DashboardPage() {
               <tr>
                 <th>Produto / Referência</th>
                 <th>Categoria</th>
-                {/* <th>Preço</th> OCULTO TEMPORARIAMENTE */}
                 <th>Variações</th>
                 <th>Estoque Geral</th>
                 <th>Visibilidade</th>

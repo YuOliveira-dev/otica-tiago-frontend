@@ -261,7 +261,6 @@ export default function AdminProdutosPage() {
               <tr>
                 <th>Produto & Referência</th>
                 <th>Categoria</th>
-                {/* <th>Preço</th> OCULTO TEMPORARIAMENTE */}
                 <th>Cores & Variações</th>
                 <th>Controle de Estoque</th>
                 <th>Visibilidade</th>
