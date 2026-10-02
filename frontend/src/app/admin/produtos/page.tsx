@@ -250,7 +250,7 @@ export default function AdminProdutosPage() {
               <tr>
                 <th>Produto & Referência</th>
                 <th>Categoria</th>
-                <th>Preço</th>
+                {/* <th>Preço</th> OCULTO TEMPORARIAMENTE */}
                 <th>Cores & Variações</th>
                 <th>Controle de Estoque</th>
                 <th>Visibilidade</th>
@@ -260,7 +260,7 @@ export default function AdminProdutosPage() {
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan={7} style={{ textAlign: 'center', padding: '4rem 1rem' }}>
+                  <td colSpan={6} style={{ textAlign: 'center', padding: '4rem 1rem' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px', color: 'var(--color-text-muted)' }}>
                       <Loader2 size={32} className="animate-spin" color="var(--color-accent, #c5a96f)" />
                       <span>Carregando produtos do banco de dados...</span>
@@ -269,7 +269,7 @@ export default function AdminProdutosPage() {
                 </tr>
               ) : filteredProducts.length === 0 ? (
                 <tr>
-                  <td colSpan={7} style={{ textAlign: 'center', padding: '3rem' }}>
+                  <td colSpan={6} style={{ textAlign: 'center', padding: '3rem' }}>
                     Nenhum produto encontrado com os filtros selecionados.
                   </td>
                 </tr>
@@ -333,7 +333,7 @@ export default function AdminProdutosPage() {
                         </div>
                       </td>
 
-                      {/* Price */}
+                      {/* Price OCULTO TEMPORARIAMENTE — para reativar, descomente:
                       <td>
                         {promoPrice ? (
                           <div>
@@ -348,6 +348,7 @@ export default function AdminProdutosPage() {
                           <strong>{formatPrice(price)}</strong>
                         )}
                       </td>
+                      */}
 
                       {/* Variations & Colors */}
                       <td>

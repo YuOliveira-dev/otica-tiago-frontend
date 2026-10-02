@@ -79,13 +79,16 @@ export function ProductDetailsClient({ product, produto }: ProductDetailsClientP
     ? mediaList.map((m) => m.url)
     : ['https://images.unsplash.com/photo-1591076482161-42ce6da69f67?auto=format&fit=crop&w=800&q=80'];
 
-  const regularPrice = activeProduct.price ?? activeProduct.precoVenda ?? 0;
-  const promoPrice = activeProduct.promotionalPrice ?? activeProduct.precoPromocional;
-  const effectivePrice = promoPrice || regularPrice;
-  const hasDiscount = !!promoPrice && promoPrice < regularPrice;
-  const discountPercentage = hasDiscount
-    ? Math.round(((regularPrice - promoPrice) / regularPrice) * 100)
-    : 0;
+  // ===========================================================
+  // PREÇOS OCULTOS TEMPORARIAMENTE — para reativar, descomente:
+  // const regularPrice = activeProduct.price ?? activeProduct.precoVenda ?? 0;
+  // const promoPrice = activeProduct.promotionalPrice ?? activeProduct.precoPromocional;
+  // const effectivePrice = promoPrice || regularPrice;
+  // const hasDiscount = !!promoPrice && promoPrice < regularPrice;
+  // const discountPercentage = hasDiscount
+  //   ? Math.round(((regularPrice - promoPrice) / regularPrice) * 100)
+  //   : 0;
+  // ===========================================================
 
   const productTitle = activeProduct.title || activeProduct.titulo || '';
   const parentSku = activeProduct.parentSku || activeProduct.skuPai || '';
@@ -101,7 +104,7 @@ export function ProductDetailsClient({ product, produto }: ProductDetailsClientP
     product: {
       title: productTitle,
       parentSku,
-      price: effectivePrice,
+      // price: effectivePrice, // OCULTO — reativar junto com os preços
       color: colorName,
     },
     type: 'purchase',
@@ -111,7 +114,7 @@ export function ProductDetailsClient({ product, produto }: ProductDetailsClientP
     product: {
       title: productTitle,
       parentSku,
-      price: effectivePrice,
+      // price: effectivePrice, // OCULTO — reativar junto com os preços
     },
     type: 'prescription',
   });
@@ -180,7 +183,7 @@ export function ProductDetailsClient({ product, produto }: ProductDetailsClientP
 
           <h1 className={styles.title}>{productTitle}</h1>
 
-          {/* Pricing Block */}
+          {/* Pricing Block OCULTO TEMPORARIAMENTE — para reativar, descomente o bloco abaixo
           <div className={styles.priceCard}>
             {hasDiscount && (
               <div className={styles.priceFrom}>
@@ -194,6 +197,25 @@ export function ProductDetailsClient({ product, produto }: ProductDetailsClientP
             <div className={styles.installmentText}>
               Pagamento seguro à vista via <strong>PIX</strong> com confirmação imediata
             </div>
+          </div>
+          */}
+
+          {/* Preço sob consulta */}
+          <div style={{
+            padding: '16px 20px',
+            background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
+            border: '1.5px dashed #22c55e',
+            borderRadius: 'var(--radius-md)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '4px',
+          }}>
+            <span style={{ fontSize: '1rem', fontWeight: 700, color: '#15803d' }}>
+              💬 Preço sob consulta via WhatsApp
+            </span>
+            <span style={{ fontSize: '0.8125rem', color: '#166534' }}>
+              Entre em contato para receber o melhor preço com Frete Grátis!
+            </span>
           </div>
 
           {/* Free Shipping & Warranty Notice */}
@@ -365,14 +387,19 @@ export function ProductDetailsClient({ product, produto }: ProductDetailsClientP
         </div>
       </div>
 
-      {/* Sticky Mobile Bottom Bar */}
+      {/* Sticky Mobile Bottom Bar (preço oculto) */}
       <div className={styles.stickyBottomBar}>
+        {/* Preço oculto temporariamente — para reativar, descomente:
         <div>
           <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>Preço à vista:</div>
           <div style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--color-primary-950)' }}>
             {effectivePrice.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
           </div>
         </div>
+        */}
+        <span style={{ fontSize: '0.8125rem', color: 'var(--color-text-muted)', fontWeight: 500 }}>
+          💬 Consulte o preço pelo WhatsApp
+        </span>
         <a
           href={whatsAppBuyLink}
           target="_blank"

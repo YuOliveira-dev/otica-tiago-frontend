@@ -629,20 +629,25 @@ function ProductForm() {
         </div>
       </div>
 
-      {/* 2. Pricing & Showcase Highlights */}
+      {/* 2. Destaques de Vitrine (Precificação oculta temporariamente) */}
       <div className={styles.formCard}>
         <div className={styles.cardHeader}>
           <div>
             <h2 className={styles.cardTitle}>
               <Sparkles size={20} color="var(--color-accent)" />
-              2. Precificação & Destaques de Vitrine
+              2. Destaques de Vitrine
             </h2>
             <p className={styles.cardDesc}>
-              Defina preços de venda, promoções e posições de destaque.
+              Configure destaque na home, novidade e outlet.
+              <br />
+              <em style={{ fontSize: '0.8125rem', color: 'var(--color-text-muted)' }}>
+                (Precificação oculta temporariamente — tratativa via WhatsApp)
+              </em>
             </p>
           </div>
         </div>
 
+        {/* PRECIFICAÇÃO OCULTA TEMPORARIAMENTE — para reativar, descomente o bloco abaixo:
         <div className={styles.grid2} style={{ marginBottom: '1.5rem' }}>
           <div className={styles.formGroup}>
             <label className={`${styles.label} ${styles.labelRequired}`}>
@@ -674,6 +679,7 @@ function ProductForm() {
             />
           </div>
         </div>
+        */}
 
         <div className={styles.checkboxGroup}>
           <label className={styles.checkLabel}>
