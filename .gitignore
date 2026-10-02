@@ -67,6 +67,8 @@ backend/uploads/
 **/uploads/
 backend/scratch/
 **/scratch/
+scripts/
+**/scripts/
 
 # Backend (agora em repositório dedicado: otica-tiago-backend)
 backend/
