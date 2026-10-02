@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import {
   Sparkles,
@@ -30,6 +30,7 @@ export default function DestaquesAdminPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [togglingNewId, setTogglingNewId] = useState<string | null>(null);
   const [isRemoving, setIsRemoving] = useState(false);
+  const isRemovingRef = useRef(false); // guarda síncrona para evitar duplo clique
 
   // Friendly Action Modal State
   const [modalConfig, setModalConfig] = useState<{
@@ -156,7 +157,11 @@ export default function DestaquesAdminPage() {
 
   // Efetiva a remoção da vitrine após confirmação
   const performRemoval = async (product: Product) => {
+    // Guarda síncrona: impede duplo disparo antes do re-render
+    if (isRemovingRef.current) return;
+    isRemovingRef.current = true;
     setIsRemoving(true);
+    closeModal();
     setProducts((prev) =>
       prev.map((p) =>
         p.id === product.id
@@ -190,6 +195,7 @@ export default function DestaquesAdminPage() {
       });
     } finally {
       setIsRemoving(false);
+      isRemovingRef.current = false;
     }
   };
 
