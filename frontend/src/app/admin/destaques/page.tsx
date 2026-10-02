@@ -20,6 +20,7 @@ import {
 } from '../../../services/catalog.service';
 import { Product } from '../../../types';
 import { ActionModal, ActionModalType } from '../../../components/Admin/ActionModal';
+import { ProductSearchSelect } from '../../../components/Admin/ProductSearchSelect';
 import styles from './destaquesAdmin.module.css';
 
 export default function DestaquesAdminPage() {
@@ -96,7 +97,7 @@ export default function DestaquesAdminPage() {
       const selectedTitle = selected?.title || selected?.titulo || 'Modelo';
 
       setSelectedProductId('');
-      await loadData();
+      await loadData(false);
 
       setModalConfig({
         isOpen: true,
@@ -248,28 +249,13 @@ export default function DestaquesAdminPage() {
 
         <form onSubmit={handleAddHighlight} className={styles.addForm}>
           <div className={styles.selectWrapper}>
-            <select
-              className={styles.select}
-              value={selectedProductId}
-              onChange={(e) => setSelectedProductId(e.target.value)}
-              disabled={isSubmitting || availableProducts.length === 0}
-            >
-              <option value="">
-                {availableProducts.length === 0
-                  ? 'Todos os produtos já estão adicionados na Home'
-                  : 'Selecione um produto cadastrado no catálogo...'}
-              </option>
-              {availableProducts.map((p) => {
-                const title = p.title || p.titulo || '';
-                const sku = p.parentSku || p.skuPai || '';
-                const cat = p.categoryName || p.categoriaNome || '';
-                return (
-                  <option key={p.id} value={p.id}>
-                    {sku} • {title} ({cat})
-                  </option>
-                );
-              })}
-            </select>
+            <ProductSearchSelect
+              products={availableProducts}
+              selectedProductId={selectedProductId}
+              onSelect={setSelectedProductId}
+              disabled={isSubmitting}
+              placeholder="Buscar por modelo, SKU ou nome do produto..."
+            />
           </div>
 
           <label className={styles.checkboxLabel}>
