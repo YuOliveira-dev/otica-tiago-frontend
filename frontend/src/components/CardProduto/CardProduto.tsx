@@ -136,20 +136,23 @@ export function ProductCard({ product, produto }: ProductCardProps) {
     setPhotoIndex(idx);
   };
 
-  const regularPrice = activeProduct.price ?? activeProduct.precoVenda ?? 0;
-  const promoPrice =
-    activeProduct.promotionalPrice ?? activeProduct.precoPromocional;
-  const effectivePrice = promoPrice || regularPrice;
-  const hasDiscount = !!promoPrice && promoPrice < regularPrice;
-  const discountPercentage = hasDiscount
-    ? Math.round(((regularPrice - promoPrice) / regularPrice) * 100)
-    : 0;
+  // ===========================================================
+  // PREÇOS OCULTOS TEMPORARIAMENTE — para reativar, descomente:
+  // const regularPrice = activeProduct.price ?? activeProduct.precoVenda ?? 0;
+  // const promoPrice =
+  //   activeProduct.promotionalPrice ?? activeProduct.precoPromocional;
+  // const effectivePrice = promoPrice || regularPrice;
+  // const hasDiscount = !!promoPrice && promoPrice < regularPrice;
+  // const discountPercentage = hasDiscount
+  //   ? Math.round(((regularPrice - promoPrice) / regularPrice) * 100)
+  //   : 0;
+  // ===========================================================
 
   const whatsAppLink = generateWhatsAppLink({
     product: {
       title: activeProduct.title || activeProduct.titulo || '',
       parentSku: activeProduct.parentSku || activeProduct.skuPai || '',
-      price: effectivePrice,
+      // price: effectivePrice, // OCULTO — reativar junto com os preços
       color: currentVariation?.colorName || currentVariation?.corNome,
     },
     type: 'purchase',
@@ -275,34 +278,35 @@ export function ProductCard({ product, produto }: ProductCardProps) {
           </div>
         )}
 
-        {/* Price Section with Original strikethrough and Discount Pill */}
+        {/* ===========================================================
+             BLOCO DE PREÇOS OCULTO TEMPORARIAMENTE
+             Para reativar, remova este comentário e o fechamento abaixo,
+             e descomente os cálculos de preço acima.
+
         <div className={styles.priceSection}>
           <div className={styles.priceHeader}>
             {hasDiscount && (
               <span className={styles.priceOriginal}>
-                {regularPrice.toLocaleString('pt-BR', {
-                  style: 'currency',
-                  currency: 'BRL',
-                })}
+                {regularPrice.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
               </span>
             )}
             {hasDiscount && (
-              <span className={styles.discountBadge}>
-                {discountPercentage}%
-              </span>
+              <span className={styles.discountBadge}>{discountPercentage}%</span>
             )}
           </div>
-
           <div className={styles.priceCurrent}>
-            {effectivePrice.toLocaleString('pt-BR', {
-              style: 'currency',
-              currency: 'BRL',
-            })}
+            {effectivePrice.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
           </div>
-
           <div className={styles.installments}>
             à vista no <strong>PIX</strong> com Frete Grátis Brasil
           </div>
+        </div>
+             =========================================================== */}
+
+        {/* Preço sob consulta via WhatsApp */}
+        <div className={styles.priceConsultSection}>
+          <span className={styles.priceConsultLabel}>💬 Preço sob consulta</span>
+          <span className={styles.priceConsultSub}>Solicite pelo WhatsApp e receba na hora</span>
         </div>
 
         {/* Action Buttons: "Comprar Agora" and circular WhatsApp button */}

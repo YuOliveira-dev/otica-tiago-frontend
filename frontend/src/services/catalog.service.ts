@@ -156,7 +156,7 @@ export async function getProducts(
       params.set('ordenar', (filters.sortBy || filters.ordenar)!);
     }
     if (!params.has('limite')) {
-      params.set('limite', '50');
+      params.set('limite', '2000');
     }
 
     const qs = params.toString();
@@ -349,11 +349,71 @@ export async function getCategories(): Promise<Category[]> {
   return categoriesState;
 }
 
+export interface AdminProductsPaginatedResponse {
+  produtos: Product[];
+  paginacao: {
+    total: number;
+    pagina: number;
+    limite: number | 'all';
+    totalPaginas: number;
+  };
+}
+
+export async function getAdminProductsPaginated(params?: {
+  pagina?: number;
+  limite?: number | 'all';
+  busca?: string;
+  categoria?: string;
+  status?: string;
+  estoque?: string;
+}): Promise<AdminProductsPaginatedResponse> {
+  const query = new URLSearchParams();
+  query.set('pagina', String(params?.pagina || 1));
+  query.set('limite', String(params?.limite ?? 50));
+  if (params?.busca && params.busca.trim()) query.set('busca', params.busca.trim());
+  if (params?.categoria && params.categoria !== 'TODAS') query.set('categoria', params.categoria);
+  if (params?.status && params.status !== 'TODOS') query.set('status', params.status);
+  if (params?.estoque && params.estoque !== 'TODOS') query.set('estoque', params.estoque);
+
+  try {
+    const baseUrl = getApiBaseUrl();
+    const headers = getAuthHeaders();
+    const res = await fetch(`${baseUrl}/admin/produtos?${query.toString()}`, {
+      headers,
+      credentials: 'include',
+      cache: 'no-store',
+    });
+
+    if (res.ok) {
+      const json = await res.json();
+      if (json.sucesso && Array.isArray(json.dados)) {
+        const limitNum = typeof params?.limite === 'number' ? params.limite : 50;
+        return {
+          produtos: json.dados.map(mapBackendProductToFrontend),
+          paginacao: json.paginacao || {
+            total: json.dados.length,
+            pagina: params?.pagina || 1,
+            limite: params?.limite || 50,
+            totalPaginas: Math.ceil(json.dados.length / limitNum) || 1,
+          },
+        };
+      }
+    }
+  } catch (err) {
+    console.warn('Falha ao carregar produtos paginados da API admin:', err);
+  }
+
+  return {
+    produtos: [],
+    paginacao: { total: 0, pagina: 1, limite: 50, totalPaginas: 1 },
+  };
+}
+
 export async function getAdminProducts(): Promise<Product[]> {
   try {
     const baseUrl = getApiBaseUrl();
     const headers = getAuthHeaders();
-    const res = await fetch(`${baseUrl}/admin/produtos?limite=100`, {
+    const res = await fetch(`${baseUrl}/admin/produtos?limite=2000`, {
       headers,
       credentials: 'include',
       cache: 'no-store',
@@ -377,42 +437,49 @@ export async function getAdminProducts(): Promise<Product[]> {
 }
 
 export async function getDashboardMetrics(): Promise<DashboardMetrics> {
-  const prods = await getAdminProducts();
-  const total = prods.length;
-  const active = prods.filter(
-    (p) => p.status === 'ACTIVE' || p.status === 'ATIVO'
-  ).length;
-  const hidden = prods.filter(
-    (p) => p.status === 'HIDDEN' || p.status === 'OCULTO'
-  ).length;
+  const baseUrl = getApiBaseUrl();
+  const headers = getAuthHeaders();
 
-  let lowStock = 0;
-  let outOfStock = 0;
+  try {
+    const res = await fetch(`${baseUrl}/admin/dashboard/metricas`, {
+      headers,
+      credentials: 'include',
+      cache: 'no-store',
+    });
 
-  for (const prod of prods) {
-    const variations = prod.variations || prod.variacoes || [];
-    const totalStock = variations.reduce(
-      (acc, v) => acc + (v.stock ?? v.estoqueAtual ?? 0),
-      0
-    );
-    if (totalStock === 0) {
-      outOfStock++;
-    } else if (totalStock <= 3) {
-      lowStock++;
+    if (res.ok) {
+      const json = await res.json();
+      if (json.sucesso && json.dados) {
+        const d = json.dados;
+        return {
+          totalProducts: d.totalModelos ?? 0,
+          activeProducts: d.modelosAtivos ?? 0,
+          hiddenProducts: d.modelosOcultos ?? 0,
+          lowStock: d.estoqueBaixo ?? 0,
+          outOfStock: d.esgotados ?? 0,
+          totalProdutos: d.totalModelos ?? 0,
+          produtosAtivos: d.modelosAtivos ?? 0,
+          produtosOcultos: d.modelosOcultos ?? 0,
+          estoqueBaixo: d.estoqueBaixo ?? 0,
+          esgotados: d.esgotados ?? 0,
+        };
+      }
     }
+  } catch (err) {
+    console.error('Erro ao carregar métricas do dashboard:', err);
   }
 
   return {
-    totalProducts: total,
-    activeProducts: active,
-    hiddenProducts: hidden,
-    lowStock,
-    outOfStock,
-    totalProdutos: total,
-    produtosAtivos: active,
-    produtosOcultos: hidden,
-    estoqueBaixo: lowStock,
-    esgotados: outOfStock,
+    totalProducts: 0,
+    activeProducts: 0,
+    hiddenProducts: 0,
+    lowStock: 0,
+    outOfStock: 0,
+    totalProdutos: 0,
+    produtosAtivos: 0,
+    produtosOcultos: 0,
+    estoqueBaixo: 0,
+    esgotados: 0,
   };
 }
 

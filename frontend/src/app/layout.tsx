@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
+import { Analytics } from '@vercel/analytics/next';
 import './globals.css';
 import { Header } from '../components/Header/Header';
 import { Footer } from '../components/Footer/Footer';
@@ -91,6 +92,7 @@ export default function RootLayout({
           <WhatsAppFloat />
           <Footer />
         </PublicShell>
+        <Analytics />
       </body>
     </html>
   );

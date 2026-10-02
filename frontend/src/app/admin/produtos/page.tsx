@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import {
   Search,
@@ -10,9 +10,11 @@ import {
   Glasses,
   CheckCircle,
   Loader2,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import {
-  getAdminProducts,
+  getAdminProductsPaginated,
   toggleProductVisibility,
   getCategories,
 } from '../../../services/catalog.service';
@@ -23,14 +25,28 @@ import styles from './produtosAdmin.module.css';
 export default function AdminProdutosPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState<number | 'all'>(50);
   const [isLoading, setIsLoading] = useState(true);
+  const [isFetching, setIsFetching] = useState(false);
   const [togglingProductId, setTogglingProductId] = useState<string | null>(null);
 
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('TODOS');
   const [categoryFilter, setCategoryFilter] = useState<string>('TODAS');
   const [stockFilter, setStockFilter] = useState<string>('TODOS');
+
+  // Debounce search input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   // Friendly Action Modal State
   const [modalConfig, setModalConfig] = useState<{
@@ -52,23 +68,60 @@ export default function AdminProdutosPage() {
     setModalConfig((prev) => ({ ...prev, isOpen: false }));
   };
 
+  // Carrega categorias na montagem
   useEffect(() => {
-    async function loadData() {
+    async function loadCats() {
       try {
-        const [prods, cats] = await Promise.all([
-          getAdminProducts(),
-          getCategories(),
-        ]);
-        setProducts(prods);
+        const cats = await getCategories();
         setCategories(cats);
       } catch (err) {
-        console.error('Erro ao carregar lista admin:', err);
-      } finally {
-        setIsLoading(false);
+        console.error('Erro ao carregar categorias:', err);
       }
     }
-    loadData();
+    loadCats();
   }, []);
+
+  // Busca página sob demanda no servidor
+  const loadPage = useCallback(
+    async (pageToLoad: number, limitToLoad: number | 'all', isInitial = false) => {
+      if (isInitial) setIsLoading(true);
+      else setIsFetching(true);
+
+      try {
+        const res = await getAdminProductsPaginated({
+          pagina: pageToLoad,
+          limite: limitToLoad,
+          busca: debouncedSearch,
+          categoria: categoryFilter,
+          status: statusFilter,
+          estoque: stockFilter,
+        });
+
+        setProducts(res.produtos);
+        setTotalItems(res.paginacao.total);
+        setTotalPages(res.paginacao.totalPaginas);
+      } catch (err) {
+        console.error('Erro ao carregar produtos paginados:', err);
+      } finally {
+        setIsLoading(false);
+        setIsFetching(false);
+      }
+    },
+    [debouncedSearch, categoryFilter, statusFilter, stockFilter]
+  );
+
+  // Recarrega sempre que filtros mudam (reiniciando na página 1)
+  useEffect(() => {
+    setCurrentPage(1);
+    loadPage(1, itemsPerPage, false);
+  }, [debouncedSearch, categoryFilter, statusFilter, stockFilter, itemsPerPage, loadPage]);
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage < 1 || newPage > totalPages || newPage === currentPage || isFetching) return;
+    setCurrentPage(newPage);
+    loadPage(newPage, itemsPerPage, false);
+    window.scrollTo({ top: 120, behavior: 'smooth' });
+  };
 
   // Perform toggle visibility status
   const performToggleStatus = async (product: Product, newStatus: ProductStatus) => {
@@ -134,48 +187,6 @@ export default function AdminProdutosPage() {
     }
   };
 
-  // Filtering
-  const filteredProducts = products.filter((p) => {
-    const title = p.title || p.titulo || '';
-    const parentSku = p.parentSku || p.skuPai || '';
-    const categoryName = p.categoryName || p.categoriaNome || '';
-    const categoryId = p.categoryId || p.categoriaId || '';
-    const variations = p.variations || p.variacoes || [];
-
-    // Search query
-    if (searchQuery.trim() !== '') {
-      const term = searchQuery.toLowerCase();
-      const matched =
-        title.toLowerCase().includes(term) ||
-        parentSku.toLowerCase().includes(term) ||
-        categoryName.toLowerCase().includes(term);
-      if (!matched) return false;
-    }
-
-    // Status filter
-    if (statusFilter !== 'TODOS') {
-      const isActive = p.status === 'ACTIVE' || p.status === 'ATIVO';
-      if (statusFilter === 'ATIVO' && !isActive) return false;
-      if (statusFilter === 'OCULTO' && isActive) return false;
-    }
-
-    // Category filter
-    if (categoryFilter !== 'TODAS' && categoryId !== categoryFilter) {
-      return false;
-    }
-
-    // Stock filter
-    const totalStock = variations.reduce((acc, v) => acc + (v.stock ?? v.estoqueAtual ?? 0), 0);
-    if (stockFilter === 'EM_ESTOQUE' && totalStock <= 0) return false;
-    if (stockFilter === 'ESTOQUE_BAIXO' && (totalStock === 0 || totalStock > 3)) return false;
-    if (stockFilter === 'ESGOTADO' && totalStock > 0) return false;
-
-    return true;
-  });
-
-  const formatPrice = (val?: number) =>
-    (val ?? 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-
   return (
     <div className={styles.container}>
 
@@ -185,7 +196,7 @@ export default function AdminProdutosPage() {
         <div className={styles.titleArea}>
           <h2>Gestão de Produtos</h2>
           <p>
-            {filteredProducts.length} de {products.length} modelos listados
+            {totalItems} {totalItems === 1 ? 'modelo encontrado' : 'modelos no catálogo'}
           </p>
         </div>
         <Link href="/admin/produtos/novo" className={styles.btnNewProduct}>
@@ -244,13 +255,13 @@ export default function AdminProdutosPage() {
 
       {/* Products Table */}
       <div className={styles.tableCard}>
-        <div className={styles.tableContainer}>
+        <div className={styles.tableContainer} style={{ opacity: isFetching ? 0.6 : 1, transition: 'opacity 0.2s ease' }}>
           <table className={styles.table}>
             <thead>
               <tr>
                 <th>Produto & Referência</th>
                 <th>Categoria</th>
-                <th>Preço</th>
+                {/* <th>Preço</th> OCULTO TEMPORARIAMENTE */}
                 <th>Cores & Variações</th>
                 <th>Controle de Estoque</th>
                 <th>Visibilidade</th>
@@ -260,21 +271,21 @@ export default function AdminProdutosPage() {
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan={7} style={{ textAlign: 'center', padding: '4rem 1rem' }}>
+                  <td colSpan={6} style={{ textAlign: 'center', padding: '4rem 1rem' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px', color: 'var(--color-text-muted)' }}>
                       <Loader2 size={32} className="animate-spin" color="var(--color-accent, #c5a96f)" />
                       <span>Carregando produtos do banco de dados...</span>
                     </div>
                   </td>
                 </tr>
-              ) : filteredProducts.length === 0 ? (
+              ) : products.length === 0 ? (
                 <tr>
-                  <td colSpan={7} style={{ textAlign: 'center', padding: '3rem' }}>
+                  <td colSpan={6} style={{ textAlign: 'center', padding: '3rem' }}>
                     Nenhum produto encontrado com os filtros selecionados.
                   </td>
                 </tr>
               ) : (
-                filteredProducts.map((prod) => {
+                products.map((prod) => {
                   const mediaList = prod.media || prod.midias || [];
                   const thumb = mediaList.find((m) => m.isPrimary || m.principal) || mediaList[0];
                   const variations = prod.variations || prod.variacoes || [];
@@ -333,7 +344,7 @@ export default function AdminProdutosPage() {
                         </div>
                       </td>
 
-                      {/* Price */}
+                      {/* Price OCULTO TEMPORARIAMENTE — para reativar, descomente:
                       <td>
                         {promoPrice ? (
                           <div>
@@ -348,6 +359,7 @@ export default function AdminProdutosPage() {
                           <strong>{formatPrice(price)}</strong>
                         )}
                       </td>
+                      */}
 
                       {/* Variations & Colors */}
                       <td>
@@ -443,6 +455,80 @@ export default function AdminProdutosPage() {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination Bar */}
+        {totalItems > 0 && (
+          <div className={styles.paginationBar}>
+            <div className={styles.paginationInfo}>
+              <span>
+                Exibindo{' '}
+                <strong>
+                  {itemsPerPage === 'all'
+                    ? `1–${totalItems}`
+                    : `${(currentPage - 1) * (itemsPerPage as number) + 1}–${Math.min(
+                        currentPage * (itemsPerPage as number),
+                        totalItems
+                      )}`}
+                </strong>{' '}
+                de <strong>{totalItems}</strong> modelos
+              </span>
+
+              <div className={styles.pageSizeSelector}>
+                <span>Itens por página:</span>
+                <select
+                  value={itemsPerPage}
+                  onChange={(e) => {
+                    const val = e.target.value === 'all' ? 'all' : Number(e.target.value);
+                    setItemsPerPage(val);
+                    setCurrentPage(1);
+                  }}
+                  className={styles.pageSizeSelect}
+                >
+                  <option value={25}>25</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                  <option value={200}>200</option>
+                  <option value="all">Todos ({totalItems})</option>
+                </select>
+              </div>
+            </div>
+
+            {totalPages > 1 && (
+              <div className={styles.paginationControls}>
+                <button
+                  type="button"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1 || isFetching}
+                  className={styles.btnPagination}
+                  title="Página anterior"
+                >
+                  <ChevronLeft size={16} />
+                  <span>Anterior</span>
+                </button>
+
+                <div className={styles.pageIndicator}>
+                  <span>
+                    Página <strong>{currentPage}</strong> de <strong>{totalPages}</strong>
+                  </span>
+                  {isFetching && (
+                    <Loader2 size={14} className="animate-spin" color="var(--color-accent, #c5a96f)" />
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages || isFetching}
+                  className={styles.btnPagination}
+                  title="Próxima página"
+                >
+                  <span>Próxima</span>
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
       {/* Friendly Action Confirmation & Feedback Modal */}
       <ActionModal

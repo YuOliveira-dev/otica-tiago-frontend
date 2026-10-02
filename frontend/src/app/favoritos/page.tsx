@@ -74,7 +74,7 @@ export default function FavoritosPage() {
     favoriteProducts: products.map((p) => ({
       title: p.title || p.titulo || '',
       parentSku: p.parentSku || p.skuPai || '',
-      price: p.promotionalPrice || p.precoPromocional || p.price || p.precoVenda || 0,
+      // price: p.promotionalPrice || p.precoPromocional || p.price || p.precoVenda || 0, // OCULTO TEMPORARIAMENTE
     })),
   });
 
