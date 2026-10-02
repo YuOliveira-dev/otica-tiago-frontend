@@ -437,9 +437,11 @@ export async function getAdminProducts(): Promise<Product[]> {
 }
 
 export async function getDashboardMetrics(): Promise<DashboardMetrics> {
+  const baseUrl = getApiBaseUrl();
+  const headers = getAuthHeaders();
+
+  // 1. Tenta endpoint dedicado /admin/dashboard/metricas
   try {
-    const baseUrl = getApiBaseUrl();
-    const headers = getAuthHeaders();
     const res = await fetch(`${baseUrl}/admin/dashboard/metricas`, {
       headers,
       credentials: 'include',
@@ -465,7 +467,65 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
       }
     }
   } catch (err) {
-    console.warn('Falha ao carregar métricas do dashboard da API:', err);
+    console.warn('Endpoint /admin/dashboard/metricas falhou, tentando fallback:', err);
+  }
+
+  // 2. Fallback: alias /admin/produtos/metricas
+  try {
+    const res = await fetch(`${baseUrl}/admin/produtos/metricas`, {
+      headers,
+      credentials: 'include',
+      cache: 'no-store',
+    });
+
+    if (res.ok) {
+      const json = await res.json();
+      if (json.sucesso && json.dados) {
+        const d = json.dados;
+        return {
+          totalProducts: d.totalModelos ?? 0,
+          activeProducts: d.modelosAtivos ?? 0,
+          hiddenProducts: d.modelosOcultos ?? 0,
+          lowStock: d.estoqueBaixo ?? 0,
+          outOfStock: d.esgotados ?? 0,
+          totalProdutos: d.totalModelos ?? 0,
+          produtosAtivos: d.modelosAtivos ?? 0,
+          produtosOcultos: d.modelosOcultos ?? 0,
+          estoqueBaixo: d.estoqueBaixo ?? 0,
+          esgotados: d.esgotados ?? 0,
+        };
+      }
+    }
+  } catch (err) {
+    console.warn('Fallback /admin/produtos/metricas falhou:', err);
+  }
+
+  // 3. Fallback: conta total via /admin/produtos?limite=1
+  try {
+    const res = await fetch(`${baseUrl}/admin/produtos?limite=1`, {
+      headers,
+      credentials: 'include',
+      cache: 'no-store',
+    });
+
+    if (res.ok) {
+      const json = await res.json();
+      const total = json.paginacao?.total ?? (Array.isArray(json.dados) ? json.dados.length : 0);
+      return {
+        totalProducts: total,
+        activeProducts: total,
+        hiddenProducts: 0,
+        lowStock: 0,
+        outOfStock: 0,
+        totalProdutos: total,
+        produtosAtivos: total,
+        produtosOcultos: 0,
+        estoqueBaixo: 0,
+        esgotados: 0,
+      };
+    }
+  } catch (err) {
+    console.warn('Fallback /admin/produtos?limite=1 falhou:', err);
   }
 
   return {
