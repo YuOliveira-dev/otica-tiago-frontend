@@ -437,42 +437,48 @@ export async function getAdminProducts(): Promise<Product[]> {
 }
 
 export async function getDashboardMetrics(): Promise<DashboardMetrics> {
-  const prods = await getAdminProducts();
-  const total = prods.length;
-  const active = prods.filter(
-    (p) => p.status === 'ACTIVE' || p.status === 'ATIVO'
-  ).length;
-  const hidden = prods.filter(
-    (p) => p.status === 'HIDDEN' || p.status === 'OCULTO'
-  ).length;
+  try {
+    const baseUrl = getApiBaseUrl();
+    const headers = getAuthHeaders();
+    const res = await fetch(`${baseUrl}/admin/dashboard/metricas`, {
+      headers,
+      credentials: 'include',
+      cache: 'no-store',
+    });
 
-  let lowStock = 0;
-  let outOfStock = 0;
-
-  for (const prod of prods) {
-    const variations = prod.variations || prod.variacoes || [];
-    const totalStock = variations.reduce(
-      (acc, v) => acc + (v.stock ?? v.estoqueAtual ?? 0),
-      0
-    );
-    if (totalStock === 0) {
-      outOfStock++;
-    } else if (totalStock <= 3) {
-      lowStock++;
+    if (res.ok) {
+      const json = await res.json();
+      if (json.sucesso && json.dados) {
+        const d = json.dados;
+        return {
+          totalProducts: d.totalModelos ?? 0,
+          activeProducts: d.modelosAtivos ?? 0,
+          hiddenProducts: d.modelosOcultos ?? 0,
+          lowStock: d.estoqueBaixo ?? 0,
+          outOfStock: d.esgotados ?? 0,
+          totalProdutos: d.totalModelos ?? 0,
+          produtosAtivos: d.modelosAtivos ?? 0,
+          produtosOcultos: d.modelosOcultos ?? 0,
+          estoqueBaixo: d.estoqueBaixo ?? 0,
+          esgotados: d.esgotados ?? 0,
+        };
+      }
     }
+  } catch (err) {
+    console.warn('Falha ao carregar métricas do dashboard da API:', err);
   }
 
   return {
-    totalProducts: total,
-    activeProducts: active,
-    hiddenProducts: hidden,
-    lowStock,
-    outOfStock,
-    totalProdutos: total,
-    produtosAtivos: active,
-    produtosOcultos: hidden,
-    estoqueBaixo: lowStock,
-    esgotados: outOfStock,
+    totalProducts: 0,
+    activeProducts: 0,
+    hiddenProducts: 0,
+    lowStock: 0,
+    outOfStock: 0,
+    totalProdutos: 0,
+    produtosAtivos: 0,
+    produtosOcultos: 0,
+    estoqueBaixo: 0,
+    esgotados: 0,
   };
 }
 
