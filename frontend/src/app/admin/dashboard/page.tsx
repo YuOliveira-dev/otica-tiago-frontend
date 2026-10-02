@@ -50,8 +50,9 @@ export default function DashboardPage() {
     return variations.reduce((acc, v) => acc + (v.stock ?? v.estoqueAtual ?? 0), 0);
   };
 
-  const formatPrice = (val: number) =>
-    val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  // formatPrice OCULTO TEMPORARIAMENTE — para reativar, descomente:
+  // const formatPrice = (val: number) =>
+  //   val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
   return (
     <div className={styles.dashboardGrid}>
@@ -145,7 +146,7 @@ export default function DashboardPage() {
               <tr>
                 <th>Produto / Referência</th>
                 <th>Categoria</th>
-                <th>Preço</th>
+                {/* <th>Preço</th> OCULTO TEMPORARIAMENTE */}
                 <th>Variações</th>
                 <th>Estoque Geral</th>
                 <th>Visibilidade</th>
@@ -155,7 +156,7 @@ export default function DashboardPage() {
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan={7} style={{ textAlign: 'center', padding: '3.5rem 1rem' }}>
+                  <td colSpan={6} style={{ textAlign: 'center', padding: '3.5rem 1rem' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '10px', color: '#64748b' }}>
                       <Loader2 size={32} className="animate-spin" color="var(--color-accent, #c5a96f)" />
                       <span>Carregando dados do banco de dados...</span>
@@ -164,7 +165,7 @@ export default function DashboardPage() {
                 </tr>
               ) : products.length === 0 ? (
                 <tr>
-                  <td colSpan={7} style={{ textAlign: 'center', padding: '2rem' }}>
+                  <td colSpan={6} style={{ textAlign: 'center', padding: '2rem' }}>
                     Nenhum produto cadastrado.
                   </td>
                 </tr>
@@ -177,8 +178,9 @@ export default function DashboardPage() {
                 const parentSku = prod.parentSku || prod.skuPai || '';
                 const categoryName = prod.categoryName || prod.categoriaNome || '';
                 const variations = prod.variations || prod.variacoes || [];
-                const effectivePrice = prod.promotionalPrice || prod.precoPromocional || prod.price || prod.precoVenda || 0;
                 const isActive = prod.status === 'ACTIVE' || prod.status === 'ATIVO';
+                // effectivePrice OCULTO TEMPORARIAMENTE — para reativar, descomente:
+                // const effectivePrice = prod.promotionalPrice || prod.precoPromocional || prod.price || prod.precoVenda || 0;
 
                 return (
                   <tr key={prod.id}>
@@ -207,11 +209,11 @@ export default function DashboardPage() {
 
                     <td>{categoryName}</td>
 
+                    {/* Preço OCULTO TEMPORARIAMENTE — para reativar, descomente:
                     <td>
-                      <strong>
-                        {formatPrice(effectivePrice)}
-                      </strong>
+                      <strong>{formatPrice(effectivePrice)}</strong>
                     </td>
+                    */}
 
                     <td>{variations.length} variações</td>
 
