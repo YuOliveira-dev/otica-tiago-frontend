@@ -8,7 +8,6 @@ import {
   ProductMedia,
   ProductVariation,
 } from '../types';
-import { MOCK_PRODUCTS, MOCK_CATEGORIES } from '../data/produtos';
 import { getAdminToken, logoutAdmin } from './auth.service';
 
 const getApiBaseUrl = () => {
@@ -28,8 +27,8 @@ const getAuthHeaders = () => {
   };
 };
 
-let productsState: Product[] = [...MOCK_PRODUCTS];
-let categoriesState: Category[] = [...MOCK_CATEGORIES];
+let productsState: Product[] = [];
+let categoriesState: Category[] = [];
 
 export function normalizeMediaUrl(url?: string): string {
   if (!url) return '';
@@ -135,19 +134,23 @@ export async function getProducts(
     const params = new URLSearchParams();
 
     if (filters?.search || filters?.busca) {
-      params.set('busca', (filters.search || filters.busca)!);
+      params.set('busca', (filters.search || filters.busca)!.trim());
     }
-    if (filters?.category || filters?.categoria) {
-      params.set('categoria', (filters.category || filters.categoria)!);
+    const cat = filters?.category || filters?.categoria;
+    if (cat && cat !== 'todas' && cat !== 'all') {
+      params.set('categoria', cat.trim());
     }
-    if (filters?.gender || filters?.genero) {
-      params.set('genero', (filters.gender || filters.genero)!);
+    const gen = filters?.gender || filters?.genero;
+    if (gen && gen !== 'todos' && gen !== 'all') {
+      params.set('genero', gen.trim());
     }
-    if (filters?.shape || filters?.formato) {
-      params.set('formato', (filters.shape || filters.formato)!);
+    const shp = filters?.shape || filters?.formato;
+    if (shp && shp !== 'todos' && shp !== 'all') {
+      params.set('formato', shp.trim());
     }
-    if (filters?.material) {
-      params.set('material', filters.material);
+    const mat = filters?.material;
+    if (mat && mat !== 'todos' && mat !== 'all') {
+      params.set('material', mat.trim());
     }
     if (filters?.inStockOnly || filters?.apenasEmEstoque) {
       params.set('apenasEmEstoque', 'true');
@@ -166,134 +169,17 @@ export async function getProducts(
 
     if (res.ok) {
       const json = await res.json();
-      if (json.sucesso && Array.isArray(json.dados) && json.dados.length > 0) {
-        return json.dados.map(mapBackendProductToFrontend);
+      if (json.sucesso && Array.isArray(json.dados)) {
+        const mapped = json.dados.map(mapBackendProductToFrontend);
+        productsState = mapped;
+        return mapped;
       }
     }
   } catch (err) {
-    console.warn('API pública indisponível, usando catálogo mock:', err);
+    console.warn('API pública indisponível:', err);
   }
 
-  let result = productsState.filter(
-    (p) => p.status === 'ACTIVE' || p.status === 'ATIVO'
-  );
-
-  if (!filters) return result;
-
-  const searchQuery = filters.search || filters.busca;
-  const categoryFilter = filters.category || filters.categoria;
-  const genderFilter = filters.gender || filters.genero;
-  const shapeFilter = filters.shape || filters.formato;
-  const materialFilter = filters.material;
-  const inStockOnly = filters.inStockOnly || filters.apenasEmEstoque;
-  const sortBy = filters.sortBy || filters.ordenar;
-
-  if (searchQuery && searchQuery.trim() !== '') {
-    const term = searchQuery.toLowerCase().trim();
-    result = result.filter(
-      (p) =>
-        (p.title && p.title.toLowerCase().includes(term)) ||
-        (p.titulo && p.titulo.toLowerCase().includes(term)) ||
-        (p.parentSku && p.parentSku.toLowerCase().includes(term)) ||
-        (p.skuPai && p.skuPai.toLowerCase().includes(term)) ||
-        (p.description && p.description.toLowerCase().includes(term)) ||
-        (p.descricao && p.descricao.toLowerCase().includes(term)) ||
-        (p.categoryName && p.categoryName.toLowerCase().includes(term)) ||
-        (p.categoriaNome && p.categoriaNome.toLowerCase().includes(term))
-    );
-  }
-
-  if (categoryFilter && categoryFilter !== 'todas' && categoryFilter !== 'all') {
-    const term = categoryFilter.toLowerCase();
-    const cleanTerm = term.replace(/-/g, ' ');
-    result = result.filter((p) => {
-      const catId = (p.categoryId || p.categoriaId || '').toLowerCase();
-      const catName = (p.categoryName || p.categoriaNome || '').toLowerCase();
-      return (
-        catId === term ||
-        catId === cleanTerm ||
-        catName.includes(term) ||
-        catName.includes(cleanTerm) ||
-        (term.includes('grau') && catName.includes('grau')) ||
-        ((term.includes('sol') || term.includes('solar')) && catName.includes('sol')) ||
-        (term.includes('clip') && catName.includes('clip')) ||
-        (term === 'outlet' && (p.isOutlet || p.outlet)) ||
-        (term === 'novidades' && (p.isNew || p.novidade))
-      );
-    });
-  }
-
-  if (genderFilter && genderFilter !== 'todos' && genderFilter !== 'all') {
-    result = result.filter((p) => {
-      const g = p.gender || p.genero;
-      return g === genderFilter || g === 'unissex' || g === 'unisex';
-    });
-  }
-
-  if (shapeFilter && shapeFilter !== 'todos' && shapeFilter !== 'all') {
-    const term = shapeFilter.toLowerCase();
-    result = result.filter((p) => {
-      const s = p.shape || p.formato;
-      return s?.toLowerCase() === term;
-    });
-  }
-
-  if (materialFilter && materialFilter !== 'todos' && materialFilter !== 'all') {
-    const term = materialFilter.toLowerCase();
-    result = result.filter((p) => {
-      const vars = p.variations || p.variacoes || [];
-      return vars.some((v) => v.material.toLowerCase().includes(term));
-    });
-  }
-
-  if (inStockOnly) {
-    result = result.filter((p) => {
-      const vars = p.variations || p.variacoes || [];
-      return vars.some((v) => (v.stock ?? v.estoqueAtual ?? 0) > 0);
-    });
-  }
-
-  if (sortBy) {
-    switch (sortBy) {
-      case 'price_asc':
-      case 'menor_preco':
-        result.sort((a, b) => {
-          const priceA =
-            a.promotionalPrice || a.precoPromocional || a.price || a.precoVenda || 0;
-          const priceB =
-            b.promotionalPrice || b.precoPromocional || b.price || b.precoVenda || 0;
-          return priceA - priceB;
-        });
-        break;
-      case 'price_desc':
-      case 'maior_preco':
-        result.sort((a, b) => {
-          const priceA =
-            a.promotionalPrice || a.precoPromocional || a.price || a.precoVenda || 0;
-          const priceB =
-            b.promotionalPrice || b.precoPromocional || b.price || b.precoVenda || 0;
-          return priceB - priceA;
-        });
-        break;
-      case 'newest':
-      case 'novidades':
-        result.sort((a, b) => {
-          const isNewA = a.isNew || a.novidade ? 1 : 0;
-          const isNewB = b.isNew || b.novidade ? 1 : 0;
-          return isNewB - isNewA;
-        });
-        break;
-      default:
-        result.sort((a, b) => {
-          const featA = a.featuredHome || a.destaqueHome ? 1 : 0;
-          const featB = b.featuredHome || b.destaqueHome ? 1 : 0;
-          return featB - featA;
-        });
-        break;
-    }
-  }
-
-  return result;
+  return [];
 }
 
 export async function getProductById(id?: string): Promise<Product | null> {
@@ -301,7 +187,7 @@ export async function getProductById(id?: string): Promise<Product | null> {
 
   try {
     const baseUrl = getApiBaseUrl();
-    const res = await fetch(`${baseUrl}/produtos/${id}`, { cache: 'no-store' });
+    const res = await fetch(`${baseUrl}/produtos/${encodeURIComponent(id)}`, { cache: 'no-store' });
     if (res.ok) {
       const json = await res.json();
       if (json.sucesso && json.dados) {
@@ -309,6 +195,7 @@ export async function getProductById(id?: string): Promise<Product | null> {
       }
     }
   } catch (err) {
+    console.warn('Falha ao buscar produto por ID:', err);
   }
 
   const term = id.toLowerCase();
@@ -323,13 +210,39 @@ export async function getProductById(id?: string): Promise<Product | null> {
 }
 
 export async function getFeaturedProducts(): Promise<Product[]> {
+  try {
+    const baseUrl = getApiBaseUrl();
+    const res = await fetch(`${baseUrl}/produtos/destaques`, { cache: 'no-store' });
+    if (res.ok) {
+      const json = await res.json();
+      if (json.sucesso && Array.isArray(json.dados) && json.dados.length > 0) {
+        return json.dados.map(mapBackendProductToFrontend);
+      }
+    }
+  } catch (err) {
+    console.warn('Falha ao carregar produtos em destaque da API:', err);
+  }
+
   const all = await getProducts();
-  return all.filter((p) => p.featuredHome || p.destaqueHome);
+  return all.slice(0, 8);
 }
 
 export async function getNewArrivalProducts(): Promise<Product[]> {
-  const all = await getProducts();
-  return all.filter((p) => p.isNew || p.novidade);
+  try {
+    const baseUrl = getApiBaseUrl();
+    const res = await fetch(`${baseUrl}/produtos/novidades`, { cache: 'no-store' });
+    if (res.ok) {
+      const json = await res.json();
+      if (json.sucesso && Array.isArray(json.dados) && json.dados.length > 0) {
+        return json.dados.map(mapBackendProductToFrontend);
+      }
+    }
+  } catch (err) {
+    console.warn('Falha ao carregar produtos novidades da API:', err);
+  }
+
+  const all = await getProducts({ sortBy: 'novidades' });
+  return all.filter((p) => p.isNew || p.novidade).slice(0, 8);
 }
 
 export async function getCategories(): Promise<Category[]> {
@@ -339,12 +252,21 @@ export async function getCategories(): Promise<Category[]> {
     if (res.ok) {
       const json = await res.json();
       if (json.sucesso && Array.isArray(json.dados) && json.dados.length > 0) {
-        categoriesState = json.dados;
+        categoriesState = json.dados.map((c: any) => ({
+          id: c.id,
+          name: c.nome || c.name,
+          nome: c.nome || c.name,
+          slug: c.slug,
+          order: c.ordem ?? c.order ?? 1,
+          ordem: c.ordem ?? c.order ?? 1,
+          subcategories: c.subcategorias || c.subcategories || [],
+          totalProdutosAtivos: c.totalProdutosAtivos,
+        }));
         return categoriesState;
       }
     }
   } catch (err) {
-    console.warn('API de categorias indisponível, usando dados mock:', err);
+    console.warn('API de categorias indisponível:', err);
   }
   return categoriesState;
 }

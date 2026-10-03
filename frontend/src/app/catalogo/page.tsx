@@ -126,11 +126,23 @@ function CatalogoContent() {
               className={styles.selectInput}
             >
               <option value="todas">Todas as Categorias</option>
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>
-                  {cat.name || cat.nome}
-                </option>
-              ))}
+              <optgroup label="Coleções Principais">
+                <option value="oculos-de-grau">Óculos de Grau</option>
+                <option value="oculos-de-sol">Óculos de Sol</option>
+                <option value="clip-on">Clip-On Magnético</option>
+                <option value="lancamentos">Lançamentos</option>
+                <option value="outlet">Outlet / Ofertas</option>
+                <option value="infantil">Infantil</option>
+              </optgroup>
+              {categories.length > 0 && (
+                <optgroup label="Linhas do Catálogo">
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name || cat.nome}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
             </select>
           </div>
 
@@ -335,11 +347,23 @@ function CatalogoContent() {
                   className={styles.selectInput}
                 >
                   <option value="todas">Todas as Categorias</option>
-                  {categories.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.name || cat.nome}
-                    </option>
-                  ))}
+                  <optgroup label="Coleções Principais">
+                    <option value="oculos-de-grau">Óculos de Grau</option>
+                    <option value="oculos-de-sol">Óculos de Sol</option>
+                    <option value="clip-on">Clip-On Magnético</option>
+                    <option value="lancamentos">Lançamentos</option>
+                    <option value="outlet">Outlet / Ofertas</option>
+                    <option value="infantil">Infantil</option>
+                  </optgroup>
+                  {categories.length > 0 && (
+                    <optgroup label="Linhas do Catálogo">
+                      {categories.map((cat) => (
+                        <option key={cat.id} value={cat.id}>
+                          {cat.name || cat.nome}
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
                 </select>
               </div>
 
