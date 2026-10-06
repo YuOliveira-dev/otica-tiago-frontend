@@ -309,7 +309,7 @@ export function ProductCard({ product, produto }: ProductCardProps) {
           <span className={styles.priceConsultSub}>Solicite pelo WhatsApp e receba na hora</span>
         </div>
 
-        {/* Action Buttons: "Comprar Agora" and circular WhatsApp button */}
+        {/* Action Button: "Comprar Agora" via WhatsApp */}
         <div className={styles.actionsRow}>
           <a
             href={whatsAppLink}
@@ -317,17 +317,8 @@ export function ProductCard({ product, produto }: ProductCardProps) {
             rel="noopener noreferrer"
             className={styles.btnBuyNow}
           >
-            Comprar Agora
-          </a>
-          <a
-            href={whatsAppLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.btnCart}
-            aria-label="Pedir no WhatsApp"
-            title="Pedir no WhatsApp"
-          >
             <WhatsAppIcon size={18} />
+            <span>Comprar Agora</span>
           </a>
         </div>
       </div>

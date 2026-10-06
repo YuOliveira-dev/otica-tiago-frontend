@@ -239,8 +239,6 @@ function CatalogoContent() {
                 >
                   <option value="populares">Mais Populares</option>
                   <option value="novidades">Lançamentos</option>
-                  <option value="menor_preco">Menor Preço</option>
-                  <option value="maior_preco">Maior Preço</option>
                 </select>
               </div>
             </div>
