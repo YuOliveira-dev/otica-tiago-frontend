@@ -234,11 +234,80 @@ export default function AdminProdutosPage() {
           className={styles.selectFilter}
         >
           <option value="TODAS">Todas as Categorias</option>
-          {categories.map((cat) => (
-            <option key={cat.id} value={cat.id}>
-              {cat.name || cat.nome}
-            </option>
-          ))}
+          {categories.filter((c) => {
+            const s = c.slug?.toLowerCase() || '';
+            const n = (c.name || c.nome || '').toLowerCase();
+            return (
+              s === 'oculos-de-grau' ||
+              s === 'oculos-de-sol' ||
+              s === 'clip-on' ||
+              s === 'outlet' ||
+              n === 'óculos de grau' ||
+              n === 'óculos de sol' ||
+              n === 'clip-on' ||
+              n === 'outlet'
+            );
+          }).length > 0 && (
+            <optgroup label="Categorias Principais">
+              {categories
+                .filter((c) => {
+                  const s = c.slug?.toLowerCase() || '';
+                  const n = (c.name || c.nome || '').toLowerCase();
+                  return (
+                    s === 'oculos-de-grau' ||
+                    s === 'oculos-de-sol' ||
+                    s === 'clip-on' ||
+                    s === 'outlet' ||
+                    n === 'óculos de grau' ||
+                    n === 'óculos de sol' ||
+                    n === 'clip-on' ||
+                    n === 'outlet'
+                  );
+                })
+                .map((cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.name || cat.nome}
+                  </option>
+                ))}
+            </optgroup>
+          )}
+          {categories.filter((c) => {
+            const s = c.slug?.toLowerCase() || '';
+            const n = (c.name || c.nome || '').toLowerCase();
+            return !(
+              s === 'oculos-de-grau' ||
+              s === 'oculos-de-sol' ||
+              s === 'clip-on' ||
+              s === 'outlet' ||
+              n === 'óculos de grau' ||
+              n === 'óculos de sol' ||
+              n === 'clip-on' ||
+              n === 'outlet'
+            );
+          }).length > 0 && (
+            <optgroup label="Outras Linhas / Preços">
+              {categories
+                .filter((c) => {
+                  const s = c.slug?.toLowerCase() || '';
+                  const n = (c.name || c.nome || '').toLowerCase();
+                  return !(
+                    s === 'oculos-de-grau' ||
+                    s === 'oculos-de-sol' ||
+                    s === 'clip-on' ||
+                    s === 'outlet' ||
+                    n === 'óculos de grau' ||
+                    n === 'óculos de sol' ||
+                    n === 'clip-on' ||
+                    n === 'outlet'
+                  );
+                })
+                .map((cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.name || cat.nome}
+                  </option>
+                ))}
+            </optgroup>
+          )}
         </select>
 
         <select

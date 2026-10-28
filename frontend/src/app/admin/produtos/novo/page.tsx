@@ -204,6 +204,24 @@ function ProductForm() {
   const availableSubcategories =
     categories.find((c) => c.id === categoryId)?.subcategories || [];
 
+  const isMainCategory = (cat: Category) => {
+    const s = cat.slug?.toLowerCase() || '';
+    const n = (cat.name || cat.nome || '').toLowerCase();
+    return (
+      s === 'oculos-de-grau' ||
+      s === 'oculos-de-sol' ||
+      s === 'clip-on' ||
+      s === 'outlet' ||
+      n === 'óculos de grau' ||
+      n === 'óculos de sol' ||
+      n === 'clip-on' ||
+      n === 'outlet'
+    );
+  };
+
+  const mainCategories = categories.filter(isMainCategory);
+  const otherCategories = categories.filter((c) => !isMainCategory(c));
+
   // File upload directly to Vercel Blob via backend API
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -549,11 +567,30 @@ function ProductForm() {
               }}
               className={styles.select}
             >
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>
-                  {cat.name || cat.nome}
-                </option>
-              ))}
+              {mainCategories.length > 0 && (
+                <optgroup label="Categorias Principais">
+                  {mainCategories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name || cat.nome}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
+              {otherCategories.length > 0 && (
+                <optgroup label="Outras Linhas / Preços">
+                  {otherCategories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name || cat.nome}
+                    </option>
+                  ))}
+                </optgroup>
+              )}
+              {mainCategories.length === 0 && otherCategories.length === 0 &&
+                categories.map((cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.name || cat.nome}
+                  </option>
+                ))}
             </select>
           </div>
 

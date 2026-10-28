@@ -56,6 +56,23 @@ function CatalogoContent() {
     loadData();
   }, [filters]);
 
+  const specificCategories = categories.filter((c) => {
+    const s = c.slug?.toLowerCase() || '';
+    const n = (c.name || c.nome || '').toLowerCase();
+    return (
+      s !== 'oculos-de-grau' &&
+      s !== 'oculos-de-sol' &&
+      s !== 'clip-on' &&
+      s !== 'outlet' &&
+      s !== 'lancamentos' &&
+      s !== 'infantil' &&
+      n !== 'óculos de grau' &&
+      n !== 'óculos de sol' &&
+      n !== 'clip-on' &&
+      n !== 'outlet'
+    );
+  });
+
   const updateFilter = (field: keyof FiltersState, value: any) => {
     setFilters((prev) => ({ ...prev, [field]: value }));
   };
@@ -134,9 +151,9 @@ function CatalogoContent() {
                 <option value="outlet">Outlet / Ofertas</option>
                 <option value="infantil">Infantil</option>
               </optgroup>
-              {categories.length > 0 && (
+              {specificCategories.length > 0 && (
                 <optgroup label="Linhas do Catálogo">
-                  {categories.map((cat) => (
+                  {specificCategories.map((cat) => (
                     <option key={cat.id} value={cat.id}>
                       {cat.name || cat.nome}
                     </option>
@@ -353,9 +370,9 @@ function CatalogoContent() {
                     <option value="outlet">Outlet / Ofertas</option>
                     <option value="infantil">Infantil</option>
                   </optgroup>
-                  {categories.length > 0 && (
+                  {specificCategories.length > 0 && (
                     <optgroup label="Linhas do Catálogo">
-                      {categories.map((cat) => (
+                      {specificCategories.map((cat) => (
                         <option key={cat.id} value={cat.id}>
                           {cat.name || cat.nome}
                         </option>
