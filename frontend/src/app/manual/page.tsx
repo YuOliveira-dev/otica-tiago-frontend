@@ -22,22 +22,10 @@ export default function ManualHubPage() {
           </Link>
         </header>
 
-        <h1 className={styles.title}>Manual de Operação com Vídeos Práticos</h1>
+        <h1 className={styles.title}>Manual do Usuário & Tutoriais Operacionais</h1>
         <p className={styles.subtitle}>
-          Selecione qualquer módulo abaixo para assistir ao vídeo gravado em tela real com todas as operações e baixar a documentação oficial em PDF.
+          Selecione qualquer módulo abaixo para assistir ao vídeo gravado em tela real com todas as operações e conferir o guia prático passo a passo detalhado por texto.
         </p>
-
-        <div className={styles.actions} style={{ marginBottom: '28px' }}>
-          <a
-            href="/manual/Manual-Completo-TS-EYEWEAR.pdf"
-            target="_blank"
-            rel="noopener noreferrer"
-            download="Manual-Completo-TS-EYEWEAR.pdf"
-            className={styles.btnPrimary}
-          >
-            📕 Baixar Apostila Mestre Completa (PDF)
-          </a>
-        </div>
 
         <div className={styles.hubGrid}>
           {MANUAL_MODULES.map((m) => (

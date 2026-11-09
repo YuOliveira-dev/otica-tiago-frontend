@@ -15,6 +15,7 @@ import {
   LogOut,
   Loader2,
   Sparkles,
+  BookOpen,
 } from 'lucide-react';
 import {
   logoutAdmin,
@@ -131,6 +132,11 @@ export default function AdminLayout({
       href: '/admin/banners',
       icon: <Sliders size={18} />,
     },
+    {
+      label: 'Manual de Uso',
+      href: '/manual',
+      icon: <BookOpen size={18} />,
+    },
   ];
 
   const getPageTitle = () => {
@@ -140,6 +146,7 @@ export default function AdminLayout({
     if (pathname.includes('/admin/destaques')) return 'Modelos Mais Desejados (Home)';
     if (pathname.includes('/admin/categorias')) return 'Gestão de Categorias';
     if (pathname.includes('/admin/banners')) return 'Gestão de Banners';
+    if (pathname.includes('/manual')) return 'Manual do Usuário';
     return 'Painel Administrativo';
   };
 
