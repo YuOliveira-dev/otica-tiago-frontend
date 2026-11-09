@@ -6,6 +6,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { SlidersHorizontal, RotateCcw, ChevronRight, Search, Loader2, X } from 'lucide-react';
 import { WhatsAppIcon } from '../../components/Icons';
 import { ProductCard } from '../../components/CardProduto/CardProduto';
+import { SkeletonProductCard } from '../../components/Skeleton';
 import { getProducts, getCategories } from '../../services/catalog.service';
 import { generateWhatsAppLink } from '../../services/whatsapp';
 import { Product, Category, FiltersState } from '../../types';
@@ -263,9 +264,10 @@ function CatalogoContent() {
 
           {/* Loading or Empty State */}
           {isLoading ? (
-            <div style={{ textAlign: 'center', padding: '80px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '14px', color: 'var(--color-text-muted)' }}>
-              <Loader2 size={36} className="animate-spin" color="var(--color-accent, #c5a96f)" />
-              <span>Carregando catálogo do banco de dados...</span>
+            <div className={styles.productsGrid}>
+              {Array.from({ length: 8 }).map((_, i) => (
+                <SkeletonProductCard key={i} />
+              ))}
             </div>
           ) : products.length === 0 ? (
             <div className={styles.emptyState}>

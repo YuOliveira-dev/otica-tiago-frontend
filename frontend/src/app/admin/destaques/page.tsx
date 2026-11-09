@@ -21,6 +21,7 @@ import {
 import { Product } from '../../../types';
 import { ActionModal, ActionModalType } from '../../../components/Admin/ActionModal';
 import { ProductSearchSelect } from '../../../components/Admin/ProductSearchSelect';
+import { SkeletonProductCard } from '../../../components/Skeleton';
 import styles from './destaquesAdmin.module.css';
 
 export default function DestaquesAdminPage() {
@@ -290,9 +291,10 @@ export default function DestaquesAdminPage() {
 
       {/* Grid de Modelos Atuais na Home */}
       {isLoading ? (
-        <div className={styles.emptyCard}>
-          <Loader2 size={28} style={{ animation: 'spin 1s linear infinite' }} />
-          <span>Carregando vitrine de modelos...</span>
+        <div className={styles.grid}>
+          {Array.from({ length: 4 }).map((_, i) => (
+            <SkeletonProductCard key={i} />
+          ))}
         </div>
       ) : featuredProducts.length === 0 ? (
         <div className={styles.emptyCard}>

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Heart, Trash2, ArrowRight, Truck, ShieldCheck, Loader2 } from 'lucide-react';
 import { WhatsAppIcon } from '../../components/Icons';
 import { ProductCard } from '../../components/CardProduto/CardProduto';
+import { SkeletonProductCard } from '../../components/Skeleton';
 import { getProducts } from '../../services/catalog.service';
 import { generateWhatsAppLink } from '../../services/whatsapp';
 import { Product } from '../../types';
@@ -125,9 +126,10 @@ export default function FavoritosPage() {
 
       {/* Content */}
       {isLoading ? (
-        <div style={{ textAlign: 'center', padding: '5rem 1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '14px', color: 'var(--color-text-muted)' }}>
-          <Loader2 size={36} className="animate-spin" color="var(--color-accent, #c5a96f)" />
-          <span>Carregando favoritos do banco de dados...</span>
+        <div className={styles.grid}>
+          {Array.from({ length: 4 }).map((_, i) => (
+            <SkeletonProductCard key={i} />
+          ))}
         </div>
       ) : products.length === 0 ? (
         <div className={styles.emptyState}>

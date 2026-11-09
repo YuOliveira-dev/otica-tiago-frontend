@@ -14,6 +14,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
+import { Skeleton, SkeletonTableRow } from '../../../components/Skeleton';
 import { getDashboardMetrics, getAdminProductsPaginated } from '../../../services/catalog.service';
 import { DashboardMetrics, Product } from '../../../types';
 import styles from './dashboard.module.css';
@@ -99,7 +100,7 @@ export default function DashboardPage() {
             <h3>Total de Modelos</h3>
             <span className={styles.kpiNumber}>
               {isLoadingMetrics ? (
-                <Loader2 size={20} className="animate-spin" />
+                <Skeleton width={50} height={28} borderRadius={6} />
               ) : (
                 metrics.totalProducts
               )}
@@ -115,7 +116,7 @@ export default function DashboardPage() {
             <h3>Modelos Ativos</h3>
             <span className={styles.kpiNumber}>
               {isLoadingMetrics ? (
-                <Loader2 size={20} className="animate-spin" />
+                <Skeleton width={50} height={28} borderRadius={6} />
               ) : (
                 metrics.activeProducts
               )}
@@ -131,7 +132,7 @@ export default function DashboardPage() {
             <h3>Ocultos / Rascunho</h3>
             <span className={styles.kpiNumber}>
               {isLoadingMetrics ? (
-                <Loader2 size={20} className="animate-spin" />
+                <Skeleton width={50} height={28} borderRadius={6} />
               ) : (
                 metrics.hiddenProducts
               )}
@@ -147,7 +148,7 @@ export default function DashboardPage() {
             <h3>Atenção ao Estoque</h3>
             <span className={styles.kpiNumber}>
               {isLoadingMetrics ? (
-                <Loader2 size={20} className="animate-spin" />
+                <Skeleton width={50} height={28} borderRadius={6} />
               ) : (
                 metrics.lowStock + metrics.outOfStock
               )}
@@ -215,23 +216,9 @@ export default function DashboardPage() {
             </thead>
             <tbody>
               {isLoadingProducts ? (
-                <tr>
-                  <td colSpan={6} style={{ textAlign: 'center', padding: '3.5rem 1rem' }}>
-                    <div
-                      style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '10px',
-                        color: '#64748b',
-                      }}
-                    >
-                      <Loader2 size={32} className="animate-spin" color="var(--color-accent, #c5a96f)" />
-                      <span>Carregando dados do banco de dados...</span>
-                    </div>
-                  </td>
-                </tr>
+                Array.from({ length: 5 }).map((_, i) => (
+                  <SkeletonTableRow key={i} columns={6} />
+                ))
               ) : products.length === 0 ? (
                 <tr>
                   <td colSpan={6} style={{ textAlign: 'center', padding: '2rem' }}>

@@ -39,6 +39,7 @@ import {
 } from '../../../services/home-categories.service';
 import { Banner, HomeCategoryCard, HomeCategorySectionConfig } from '../../../types';
 import { ActionModal, ActionModalType } from '../../../components/Admin/ActionModal';
+import { SkeletonBannerCard } from '../../../components/Skeleton';
 import styles from './bannersAdmin.module.css';
 
 const MAX_FILE_SIZE_MB = 5;
@@ -701,9 +702,10 @@ export default function AdminBannersPage() {
 
           {/* Grid de Banners Cadastrados */}
           {isLoadingBanners ? (
-            <div style={{ padding: '60px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px', color: 'var(--color-text-muted)' }}>
-              <Loader2 size={32} className="animate-spin" color="var(--color-accent, #c5a96f)" />
-              <span>Carregando banners do banco de dados...</span>
+            <div className={styles.bannersGrid}>
+              {Array.from({ length: 3 }).map((_, i) => (
+                <SkeletonBannerCard key={i} />
+              ))}
             </div>
           ) : banners.length === 0 ? (
             <div style={{ padding: '40px 0', textAlign: 'center', color: 'var(--color-text-muted)' }}>
@@ -903,9 +905,10 @@ export default function AdminBannersPage() {
 
           {/* Grid de Cards de Categoria Cadastrados */}
           {isLoadingCategories ? (
-            <div style={{ padding: '60px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px', color: 'var(--color-text-muted)' }}>
-              <Loader2 size={32} className="animate-spin" color="var(--color-accent, #c5a96f)" />
-              <span>Carregando cards de categoria do banco de dados...</span>
+            <div className={styles.bannersGrid}>
+              {Array.from({ length: 3 }).map((_, i) => (
+                <SkeletonBannerCard key={i} />
+              ))}
             </div>
           ) : categoryCards.length === 0 ? (
             <div style={{ padding: '40px 0', textAlign: 'center', color: 'var(--color-text-muted)' }}>

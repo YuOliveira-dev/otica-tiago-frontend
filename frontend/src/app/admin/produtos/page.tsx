@@ -22,6 +22,7 @@ import {
 } from '../../../services/catalog.service';
 import { Product, Category, ProductStatus } from '../../../types';
 import { ActionModal, ActionModalType } from '../../../components/Admin/ActionModal';
+import { SkeletonTableRow } from '../../../components/Skeleton';
 import styles from './produtosAdmin.module.css';
 
 export default function AdminProdutosPage() {
@@ -385,14 +386,9 @@ export default function AdminProdutosPage() {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr>
-                  <td colSpan={6} style={{ textAlign: 'center', padding: '4rem 1rem' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px', color: 'var(--color-text-muted)' }}>
-                      <Loader2 size={32} className="animate-spin" color="var(--color-accent, #c5a96f)" />
-                      <span>Carregando produtos do banco de dados...</span>
-                    </div>
-                  </td>
-                </tr>
+                Array.from({ length: 6 }).map((_, i) => (
+                  <SkeletonTableRow key={i} columns={6} />
+                ))
               ) : products.length === 0 ? (
                 <tr>
                   <td colSpan={6} style={{ textAlign: 'center', padding: '3rem' }}>

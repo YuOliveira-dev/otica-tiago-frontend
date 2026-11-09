@@ -101,18 +101,6 @@ export function ActionModal({
 
   // Icon and theme config
   const renderIcon = () => {
-    if (isLoading) {
-      return (
-        <div className={`${styles.iconWrapper} ${styles.iconConfirm}`}>
-          <Loader2
-            size={32}
-            className="animate-spin"
-            style={{ animation: 'spin 1s linear infinite' }}
-          />
-        </div>
-      );
-    }
-
     switch (type) {
       case 'success':
         return (
