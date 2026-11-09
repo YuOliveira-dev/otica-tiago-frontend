@@ -6,6 +6,7 @@ import {
   Search,
   PlusCircle,
   Edit2,
+  Trash2,
   ExternalLink,
   Glasses,
   CheckCircle,
@@ -16,6 +17,7 @@ import {
 import {
   getAdminProductsPaginated,
   toggleProductVisibility,
+  deleteAdminProduct,
   getCategories,
 } from '../../../services/catalog.service';
 import { Product, Category, ProductStatus } from '../../../types';
@@ -185,6 +187,45 @@ export default function AdminProdutosPage() {
     } else {
       performToggleStatus(product, newStatus);
     }
+  };
+
+  // Excluir produto com confirmação amigável
+  const handleDeleteProduct = (product: Product) => {
+    const title = product.title || product.titulo || 'este modelo';
+    const sku = product.parentSku || product.skuPai || '';
+    setModalConfig({
+      isOpen: true,
+      type: 'confirm',
+      title: 'Excluir Produto',
+      message: `Tem certeza que deseja excluir o modelo "${title}"${sku ? ` (SKU: ${sku})` : ''} permanentemente?\n\nEsta operação removerá o produto e suas variações do banco de dados.`,
+      confirmText: 'Sim, Excluir',
+      cancelText: 'Cancelar',
+      onConfirm: async () => {
+        closeModal();
+        try {
+          await deleteAdminProduct(product.id, true);
+          setModalConfig({
+            isOpen: true,
+            type: 'success',
+            title: 'Produto Excluído',
+            message: `O produto "${title}" foi excluído com sucesso do catálogo.`,
+            confirmText: 'Entendido',
+            onConfirm: closeModal,
+          });
+          loadPage(currentPage, itemsPerPage, false);
+        } catch (err: any) {
+          setModalConfig({
+            isOpen: true,
+            type: 'danger',
+            title: 'Erro ao Excluir',
+            message: err.message || 'Falha ao excluir produto.',
+            confirmText: 'Entendido',
+            onConfirm: closeModal,
+          });
+        }
+      },
+      onCancel: closeModal,
+    });
   };
 
   return (
@@ -514,6 +555,16 @@ export default function AdminProdutosPage() {
                           >
                             <ExternalLink size={16} />
                           </Link>
+
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteProduct(prod)}
+                            className={`${styles.btnActionIcon} ${styles.btnActionDelete}`}
+                            title="Excluir este produto"
+                            aria-label={`Excluir modelo ${prod.title || prod.titulo}`}
+                          >
+                            <Trash2 size={16} />
+                          </button>
                         </div>
                       </td>
                     </tr>

@@ -612,7 +612,7 @@ export async function saveCategory(category: Category): Promise<Category> {
   const baseUrl = getApiBaseUrl();
   const headers = getAuthHeaders();
 
-  const isEdit = category.id && category.id.length > 10;
+  const isEdit = Boolean(category.id && category.id.length > 10 && !category.id.startsWith('cat-'));
   const url = isEdit
     ? `${baseUrl}/admin/categorias/${category.id}`
     : `${baseUrl}/admin/categorias`;
@@ -639,6 +639,26 @@ export async function saveCategory(category: Category): Promise<Category> {
     return saved;
   }
   throw new Error(data.erro || 'Falha ao salvar categoria no banco de dados.');
+}
+
+export async function deleteAdminProduct(id: string, permanente = true): Promise<boolean> {
+  const baseUrl = getApiBaseUrl();
+  const headers = getAuthHeaders();
+
+  const url = `${baseUrl}/admin/produtos/${id}${permanente ? '?permanente=true' : ''}`;
+  const res = await fetch(url, {
+    method: 'DELETE',
+    headers,
+    credentials: 'include',
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (res.ok && data.sucesso) {
+    const idx = productsState.findIndex((p) => p.id === id);
+    if (idx >= 0) productsState.splice(idx, 1);
+    return true;
+  }
+  throw new Error(data.erro || 'Falha ao excluir produto no banco de dados.');
 }
 
 export async function deleteCategory(id: string): Promise<boolean> {
@@ -724,6 +744,7 @@ export const getMetricasDashboard = getDashboardMetrics;
 export const alternarVisibilidadeProduto = toggleProductVisibility;
 export const alternarDestaqueProduto = toggleProductHighlight;
 export const salvarProdutoAdmin = saveAdminProduct;
+export const excluirProdutoAdmin = deleteAdminProduct;
 export const ajustarEstoqueVariacao = adjustVariationStock;
 export const salvarCategoria = saveCategory;
 export const excluirCategoria = deleteCategory;

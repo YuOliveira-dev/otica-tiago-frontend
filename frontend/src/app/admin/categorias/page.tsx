@@ -103,7 +103,7 @@ export default function AdminCategoriasPage() {
     try {
       const existingCat = editCategoryId ? categories.find((c) => c.id === editCategoryId) : null;
       const newCategory: Category = {
-        id: editCategoryId || `cat-${Date.now()}`,
+        id: editCategoryId || '',
         name: categoryName.trim(),
         nome: categoryName.trim(),
         slug: categorySlug.trim() || categoryName.toLowerCase(),
@@ -116,8 +116,24 @@ export default function AdminCategoriasPage() {
       await saveCategory(newCategory);
       await loadCategories();
       setIsModalOpen(false);
-    } catch (err) {
+      setModalConfig({
+        isOpen: true,
+        type: 'success',
+        title: editCategoryId ? 'Categoria Atualizada' : 'Categoria Criada',
+        message: `Categoria "${newCategory.name}" salva com sucesso!`,
+        confirmText: 'Entendido',
+        onConfirm: closeModal,
+      });
+    } catch (err: any) {
       console.error('Erro ao salvar categoria:', err);
+      setModalConfig({
+        isOpen: true,
+        type: 'danger',
+        title: 'Erro ao Salvar Categoria',
+        message: err.message || 'Falha ao salvar categoria no banco de dados.',
+        confirmText: 'Entendido',
+        onConfirm: closeModal,
+      });
     } finally {
       setIsSavingCategory(false);
     }
