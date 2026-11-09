@@ -9,14 +9,20 @@ interface Props {
 }
 
 export async function generateStaticParams() {
-  return MANUAL_MODULES.map((m) => ({
-    slug: m.slug,
-  }));
+  const params: { slug: string }[] = [];
+  for (const m of MANUAL_MODULES) {
+    params.push({ slug: m.slug });
+    params.push({ slug: m.folder });
+  }
+  return params;
 }
 
 export async function generateMetadata({ params }: Props) {
   const { slug } = await params;
-  const mod = MANUAL_MODULES.find((m) => m.slug === slug.toLowerCase());
+  const normalized = (slug || '').toLowerCase();
+  const mod = MANUAL_MODULES.find(
+    (m) => m.slug.toLowerCase() === normalized || m.folder.toLowerCase() === normalized
+  );
   if (!mod) return { title: 'Módulo não encontrado — TS EYEWEAR' };
 
   return {
@@ -27,7 +33,10 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function ManualModulePage({ params }: Props) {
   const { slug } = await params;
-  const mod = MANUAL_MODULES.find((m) => m.slug === slug.toLowerCase());
+  const normalized = (slug || '').toLowerCase();
+  const mod = MANUAL_MODULES.find(
+    (m) => m.slug.toLowerCase() === normalized || m.folder.toLowerCase() === normalized
+  );
 
   if (!mod) {
     notFound();
@@ -119,4 +128,3 @@ export default async function ManualModulePage({ params }: Props) {
     </div>
   );
 }
-

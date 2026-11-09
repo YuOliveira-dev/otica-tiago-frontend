@@ -6,6 +6,7 @@ export interface ManualStep {
 
 export interface ManualModule {
   id: string;
+  folder: string;
   slug: string;
   title: string;
   subtitle: string;
@@ -18,6 +19,7 @@ export interface ManualModule {
 export const MANUAL_MODULES: ManualModule[] = [
   {
     id: '01',
+    folder: '01-Login',
     slug: '01-login',
     title: 'Módulo 01: Login no Painel',
     subtitle: 'Autenticação e Acesso Seguro ao Sistema',
@@ -34,6 +36,7 @@ export const MANUAL_MODULES: ManualModule[] = [
   },
   {
     id: '02',
+    folder: '02-Dashboard',
     slug: '02-dashboard',
     title: 'Módulo 02: Dashboard Executivo',
     subtitle: 'Visão Geral, Indicadores de Catálogo e Atalhos Rápidos',
@@ -48,6 +51,7 @@ export const MANUAL_MODULES: ManualModule[] = [
   },
   {
     id: '03',
+    folder: '03-Produtos',
     slug: '03-produtos',
     title: 'Módulo 03: Catálogo de Produtos',
     subtitle: 'Gestão de Modelos, Filtros e Controle de Visibilidade',
@@ -62,6 +66,7 @@ export const MANUAL_MODULES: ManualModule[] = [
   },
   {
     id: '04',
+    folder: '04-Novo-Produto',
     slug: '04-novo-produto',
     title: 'Módulo 04: Cadastro Real de Produto',
     subtitle: 'Cadastro Completo de Armação com Especificações Ópticas',
@@ -78,6 +83,7 @@ export const MANUAL_MODULES: ManualModule[] = [
   },
   {
     id: '05',
+    folder: '05-Destaques',
     slug: '05-destaques',
     title: 'Módulo 05: Mais Desejados',
     subtitle: 'Curadoria da Vitrine Principal da Home e Selos de Novidade',
@@ -92,6 +98,7 @@ export const MANUAL_MODULES: ManualModule[] = [
   },
   {
     id: '06',
+    folder: '06-Categorias',
     slug: '06-categorias',
     title: 'Módulo 06: Gestão de Categorias',
     subtitle: 'Estruturação do Menu da Loja, Subcategorias e URLs Amigáveis',
@@ -106,6 +113,7 @@ export const MANUAL_MODULES: ManualModule[] = [
   },
   {
     id: '07',
+    folder: '07-Banners',
     slug: '07-banners',
     title: 'Módulo 07: Banners Promocionais',
     subtitle: 'Slides Hero do Topo e Cards Fotográficos de Categorias',
@@ -119,4 +127,3 @@ export const MANUAL_MODULES: ManualModule[] = [
     ],
   },
 ];
-
