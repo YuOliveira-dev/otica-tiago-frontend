@@ -28,23 +28,23 @@
 .btnNew {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
-  background: var(--color-primary-950);
-  color: var(--color-text-white);
-  padding: 0.65rem 1.25rem;
+  gap: 0.5rem;
+  background: #111111;
+  color: #ffffff;
+  padding: 0.75rem 1.75rem;
   border-radius: var(--radius-sm);
   font-size: 0.875rem;
   font-weight: 700;
   border: none;
+  text-decoration: none;
   cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   transition: all var(--transition-fast);
-  box-shadow: var(--shadow-sm);
 }
 
 .btnNew:hover {
-  background: var(--color-accent-600);
-  color: var(--color-text-white);
-  transform: translateY(-1px);
+  background: var(--color-accent);
+  color: #111111;
 }
 
 /* Card Informativo de Padrão Técnico de Mídia */

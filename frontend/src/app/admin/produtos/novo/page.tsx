@@ -390,7 +390,7 @@ function ProductForm() {
         isOpen: true,
         type: 'warning',
         title: 'Mídia Pendente',
-        message: 'Algumas imagens selecionadas ainda não foram salvas na nuvem. Por favor, remova ou reenvie as imagens para que sejam salvas no Vercel Blob.',
+        message: 'Algumas imagens selecionadas ainda não foram salvas na nuvem. Por favor, remova ou reenvie as imagens para que sejam salvas.',
         confirmText: 'Entendido',
         onConfirm: closeModal,
       });

@@ -115,7 +115,7 @@ export default async function ManualModulePage({ params }: Props) {
         {/* Step-by-Step Breakdown (Rich Text + Screenshots + Tips) */}
         <div className={styles.stepsSection}>
           <h2 className={styles.stepsHeading}>
-            📋 Passo a Passo Detalhado por Texto
+            Passo a Passo Detalhado
           </h2>
 
           <div>

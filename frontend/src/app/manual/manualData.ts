@@ -214,7 +214,7 @@ export const MANUAL_MODULES: ManualModule[] = [
     duration: '0:50',
     videoFile: 'video-04-novo-produto.mp4',
     overview:
-      'Cadastre um produto com todos os padrões técnicos de uma ótica de excelência: dados comerciais, upload de fotos no Vercel Blob, variações de cores com estoque e especificações de medidas.',
+      'Cadastre um produto com todos os padrões técnicos de uma ótica de excelência: dados comerciais, upload de fotos, variações de cores com estoque e especificações de medidas.',
     screenshots: [
       '/manual/04-novo-produto/screenshot-01.png',
       '/manual/04-novo-produto/screenshot-02.png',
@@ -277,7 +277,7 @@ export const MANUAL_MODULES: ManualModule[] = [
       {
         num: 6,
         title: 'Salvar e Publicar o Produto',
-        desc: 'Clique em "Salvar Produto". O sistema salva o registro completo e exibe a confirmação amigável de sucesso com opção de voltar à listagem.',
+        desc: 'Clique em "Publicar Produto". O sistema salva o registro completo e exibe a confirmação de sucesso com opção de voltar à listagem.',
         screenshot: '/manual/04-novo-produto/screenshot-02.png',
       },
     ],
