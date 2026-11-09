@@ -18,21 +18,18 @@ export default function AdminCategoriasPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Modal for Create / Edit Category
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editCategoryId, setEditCategoryId] = useState<string | null>(null);
   const [categoryName, setCategoryName] = useState('');
   const [categorySlug, setCategorySlug] = useState('');
   const [categoryOrder, setCategoryOrder] = useState(1);
 
-  // Quick subcategory inputs per category { [catId]: string }
   const [subcategoryInputs, setSubcategoryInputs] = useState<Record<string, string>>({});
   const [isSavingCategory, setIsSavingCategory] = useState(false);
   const [isDeletingCategory, setIsDeletingCategory] = useState(false);
   const [addingSubCatId, setAddingSubCatId] = useState<string | null>(null);
   const [deletingSubId, setDeletingSubId] = useState<string | null>(null);
 
-  // Friendly Action Modal State
   const [modalConfig, setModalConfig] = useState<{
     isOpen: boolean;
     type: ActionModalType;
@@ -179,7 +176,6 @@ export default function AdminCategoriasPage() {
     });
   };
 
-  // Subcategories
   const handleAddSubcategory = async (catId: string) => {
     const subName = subcategoryInputs[catId];
     if (!subName || !subName.trim() || addingSubCatId) return;

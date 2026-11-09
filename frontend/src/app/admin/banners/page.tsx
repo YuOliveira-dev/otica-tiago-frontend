@@ -97,9 +97,6 @@ export default function AdminBannersPage() {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // ==========================================
-  // 2. STATE - CARDS DE CATEGORIAS (HOME)
-  // ==========================================
   const [categoryCards, setCategoryCards] = useState<HomeCategoryCard[]>([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   const [togglingCategoryId, setTogglingCategoryId] = useState<string | null>(null);
@@ -129,9 +126,6 @@ export default function AdminBannersPage() {
   const [catIsDragging, setCatIsDragging] = useState(false);
   const catFileInputRef = useRef<HTMLInputElement>(null);
 
-  // ==========================================
-  // INITIALIZATION & SCROLL LOCK
-  // ==========================================
   useEffect(() => {
     loadAllData();
 
@@ -192,9 +186,6 @@ export default function AdminBannersPage() {
     }
   };
 
-  // ==========================================
-  // BANNERS HERO HANDLERS
-  // ==========================================
   const handleTabChange = async (tab: 'hero' | 'categories') => {
     if (tab === activeTab) return;
     setActiveTab(tab);
@@ -402,9 +393,6 @@ export default function AdminBannersPage() {
     }
   };
 
-  // ==========================================
-  // SECTION TEXT CONFIG HANDLERS
-  // ==========================================
   const handleSaveSectionConfig = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSavingConfig(true);
@@ -419,9 +407,6 @@ export default function AdminBannersPage() {
     }
   };
 
-  // ==========================================
-  // CATEGORY CARDS HANDLERS
-  // ==========================================
   const openNewCategoryModal = () => {
     setEditCatId(null);
     setCatTitle('');
@@ -660,9 +645,6 @@ export default function AdminBannersPage() {
         </button>
       </div>
 
-      {/* ========================================================================= */}
-      {/* ABA 1: BANNERS HERO (CARROSSEL PRINCIPAL 1330x400)                        */}
-      {/* ========================================================================= */}
       {activeTab === 'hero' && (
         <>
           {/* Box de Padrões Técnicos Mandatórios */}
@@ -799,9 +781,6 @@ export default function AdminBannersPage() {
         </>
       )}
 
-      {/* ========================================================================= */}
-      {/* ABA 2: CARDS DE CATEGORIAS (VITRINE DA HOME page-module___8aEwW__section)  */}
-      {/* ========================================================================= */}
       {activeTab === 'categories' && (
         <>
           {/* Card de Configuração dos Textos da Seção (Eyebrow, Título, Descrição) */}
@@ -1002,9 +981,6 @@ export default function AdminBannersPage() {
         </>
       )}
 
-      {/* ========================================================================= */}
-      {/* MODAL 1: BANNERS HERO (1330x400)                                          */}
-      {/* ========================================================================= */}
       {isBannerModalOpen && (
         <div
           className={styles.modalBackdrop}
@@ -1250,9 +1226,6 @@ export default function AdminBannersPage() {
         </div>
       )}
 
-      {/* ========================================================================= */}
-      {/* MODAL 2: CARDS DE CATEGORIA (HOME 800x500 / 240px)                       */}
-      {/* ========================================================================= */}
       {isCatModalOpen && (
         <div
           className={styles.modalBackdrop}

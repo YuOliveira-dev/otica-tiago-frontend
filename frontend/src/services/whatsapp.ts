@@ -56,11 +56,6 @@ export function generateWhatsAppLink({
   const prodColor = activeProduct?.color || activeProduct?.cor;
 
   if ((activeType === 'purchase' || activeType === 'compra') && activeProduct) {
-    // ===========================================================
-    // PREÇO OCULTO TEMPORARIAMENTE — para reativar, descomente:
-    // const formattedPrice = prodPrice.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-    // E substitua a mensagem abaixo pela original com: `anunciado por ${formattedPrice}`
-    // ===========================================================
     const colorText = prodColor ? ` na cor *${prodColor}*` : '';
     message = `Olá, equipe Ótica Tiago! 🕶👓\n\nTenho interesse no modelo *${prodTitle}* (Ref: ${prodSku})${colorText}.\n\nGostaria de saber o preço e confirmar a disponibilidade para fechar meu pedido!`;
   } else if ((activeType === 'prescription' || activeType === 'grau') && activeProduct) {
@@ -70,11 +65,6 @@ export function generateWhatsAppLink({
       .map((item, index) => {
         const itemTitle = item.title || item.titulo || '';
         const itemSku = item.parentSku || item.skuPai || '';
-        // ===========================================================
-        // PREÇO OCULTO TEMPORARIAMENTE — para reativar, descomente:
-        // const itemPrice = item.price ?? item.preco ?? 0;
-        // E adicione ao return: ` - ${itemPrice.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`
-        // ===========================================================
         return `${index + 1}. *${itemTitle}* (Ref: ${itemSku})`;
       })
       .join('\n');

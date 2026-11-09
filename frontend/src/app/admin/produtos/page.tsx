@@ -36,14 +36,12 @@ export default function AdminProdutosPage() {
   const [isFetching, setIsFetching] = useState(false);
   const [togglingProductId, setTogglingProductId] = useState<string | null>(null);
 
-  // Filters
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('TODOS');
   const [categoryFilter, setCategoryFilter] = useState<string>('TODAS');
   const [stockFilter, setStockFilter] = useState<string>('TODOS');
 
-  // Debounce search input
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchQuery);
@@ -51,7 +49,6 @@ export default function AdminProdutosPage() {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Friendly Action Modal State
   const [isDeletingProduct, setIsDeletingProduct] = useState(false);
   const [isTogglingStatus, setIsTogglingStatus] = useState(false);
   const [modalConfig, setModalConfig] = useState<{
@@ -73,7 +70,6 @@ export default function AdminProdutosPage() {
     setModalConfig((prev) => ({ ...prev, isOpen: false }));
   };
 
-  // Carrega categorias na montagem
   useEffect(() => {
     async function loadCats() {
       try {
@@ -86,7 +82,6 @@ export default function AdminProdutosPage() {
     loadCats();
   }, []);
 
-  // Busca página sob demanda no servidor
   const loadPage = useCallback(
     async (pageToLoad: number, limitToLoad: number | 'all', isInitial = false) => {
       if (isInitial) setIsLoading(true);
@@ -115,7 +110,6 @@ export default function AdminProdutosPage() {
     [debouncedSearch, categoryFilter, statusFilter, stockFilter]
   );
 
-  // Recarrega sempre que filtros mudam (reiniciando na página 1)
   useEffect(() => {
     setCurrentPage(1);
     loadPage(1, itemsPerPage, false);
@@ -128,13 +122,11 @@ export default function AdminProdutosPage() {
     window.scrollTo({ top: 120, behavior: 'smooth' });
   };
 
-  // Perform toggle visibility status
   const performToggleStatus = async (product: Product, newStatus: ProductStatus) => {
     if (togglingProductId) return;
     setTogglingProductId(product.id);
     const title = product.title || product.titulo || '';
 
-    // Optimistic update
     setProducts((prev) =>
       prev.map((p) => (p.id === product.id ? { ...p, status: newStatus } : p))
     );
@@ -153,7 +145,6 @@ export default function AdminProdutosPage() {
         onConfirm: closeModal,
       });
     } catch {
-      // Revert if failed
       setProducts((prev) =>
         prev.map((p) => (p.id === product.id ? { ...p, status: product.status } : p))
       );
@@ -171,7 +162,6 @@ export default function AdminProdutosPage() {
     }
   };
 
-  // Toggle visibility status with confirmation when hiding
   const handleToggleStatus = (product: Product) => {
     if (togglingProductId) return;
     const isCurrentlyActive = product.status === 'ACTIVE' || product.status === 'ATIVO';
@@ -194,7 +184,6 @@ export default function AdminProdutosPage() {
     }
   };
 
-  // Excluir produto com confirmação amigável
   const handleDeleteProduct = (product: Product) => {
     const title = product.title || product.titulo || 'este modelo';
     const sku = product.parentSku || product.skuPai || '';

@@ -46,7 +46,6 @@ function ProductForm() {
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingMedia, setIsUploadingMedia] = useState(false);
 
-  // Friendly Action Modal State
   const [modalConfig, setModalConfig] = useState<{
     isOpen: boolean;
     type: ActionModalType;
@@ -66,7 +65,6 @@ function ProductForm() {
     setModalConfig((prev) => ({ ...prev, isOpen: false }));
   };
 
-  // Basic Information
   const [id, setId] = useState<string>('');
   const [parentSku, setParentSku] = useState<string>('');
   const [title, setTitle] = useState<string>('');
@@ -77,23 +75,18 @@ function ProductForm() {
   const [shape, setShape] = useState<string>('Redondo');
   const [gender, setGender] = useState<'feminino' | 'masculino' | 'unissex' | 'infantil'>('unissex');
 
-  // Pricing
   const [price, setPrice] = useState<number>(349.9);
   const [promotionalPrice, setPromotionalPrice] = useState<number | undefined>(undefined);
 
-  // Highlights
   const [featuredHome, setFeaturedHome] = useState<boolean>(false);
   const [isNew, setIsNew] = useState<boolean>(false);
   const [isOutlet, setIsOutlet] = useState<boolean>(false);
 
-  // Visibility
   const [status, setStatus] = useState<ProductStatus>('ACTIVE');
 
-  // Media
   const [mediaList, setMediaList] = useState<ProductMedia[]>([]);
   const [videoUrlInput, setVideoUrlInput] = useState<string>('');
 
-  // Variations (Colors, Measurements, Stock)
   const [variations, setVariations] = useState<ProductVariation[]>([
     {
       id: 'var-1',
@@ -109,7 +102,6 @@ function ProductForm() {
     },
   ]);
 
-  // Load categories and existing product if editing
   useEffect(() => {
     async function loadData() {
       try {
@@ -173,7 +165,6 @@ function ProductForm() {
             );
           }
         } else {
-          // Generate provisional parent SKU
           const randomSku = `TS-${Math.floor(1000 + Math.random() * 9000)}`;
           setParentSku(randomSku);
         }
@@ -186,7 +177,6 @@ function ProductForm() {
     loadData();
   }, [editId]);
 
-  // Automatically update slug on title input
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setTitle(val);
@@ -201,7 +191,6 @@ function ProductForm() {
     }
   };
 
-  // Subcategories available for selected category
   const availableSubcategories =
     categories.find((c) => c.id === categoryId)?.subcategories || [];
 
@@ -223,7 +212,6 @@ function ProductForm() {
   const mainCategories = categories.filter(isMainCategory);
   const otherCategories = categories.filter((c) => !isMainCategory(c));
 
-  // File upload directly to Vercel Blob via backend API
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -237,7 +225,6 @@ function ProductForm() {
         const file = files[index];
         const isVideo = file.type.startsWith('video');
 
-        // Envia para o backend para otimização Sharp (WebP) e armazenamento direto no Vercel Blob
         const finalUrl = await uploadProductImage(file, prefix);
         const isFirst = mediaList.length === 0 && index === 0;
 
@@ -298,7 +285,6 @@ function ProductForm() {
     newArray[index] = newArray[targetIndex];
     newArray[targetIndex] = temp;
 
-    // Update order
     const updated = newArray.map((m, i) => ({ ...m, order: i + 1, ordem: i + 1 }));
     setMediaList(updated);
   };
@@ -312,7 +298,6 @@ function ProductForm() {
     setMediaList(filtered.map((m, i) => ({ ...m, order: i + 1, ordem: i + 1 })));
   };
 
-  // Variations Management
   const addVariation = () => {
     const newVar: ProductVariation = {
       id: `var-${Date.now()}`,
@@ -371,10 +356,8 @@ function ProductForm() {
     });
   };
 
-  // Total stock calculation
   const totalStock = variations.reduce((acc, v) => acc + (Number(v.stock) || 0), 0);
 
-  // Form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -491,7 +474,6 @@ function ProductForm() {
 
   return (
     <form onSubmit={handleSubmit} className={styles.formContainer}>
-      {/* Top Bar */}
       <div className={styles.topBar}>
         <Link href="/admin/produtos" className={styles.btnBack}>
           <ArrowLeft size={18} />
@@ -506,7 +488,6 @@ function ProductForm() {
         </div>
       </div>
 
-      {/* 1. Main Information & Categorization */}
       <div className={styles.formCard}>
         <div className={styles.cardHeader}>
           <div>
@@ -662,7 +643,6 @@ function ProductForm() {
         </div>
       </div>
 
-      {/* 2. Destaques de Vitrine (Precificação oculta temporariamente) */}
       <div className={styles.formCard}>
         <div className={styles.cardHeader}>
           <div>
@@ -679,40 +659,6 @@ function ProductForm() {
             </p>
           </div>
         </div>
-
-        {/* PRECIFICAÇÃO OCULTA TEMPORARIAMENTE — para reativar, descomente o bloco abaixo:
-        <div className={styles.grid2} style={{ marginBottom: '1.5rem' }}>
-          <div className={styles.formGroup}>
-            <label className={`${styles.label} ${styles.labelRequired}`}>
-              Preço Normal de Venda (R$)
-            </label>
-            <input
-              type="number"
-              step="0.01"
-              required
-              value={price}
-              onChange={(e) => setPrice(parseFloat(e.target.value) || 0)}
-              className={styles.input}
-            />
-          </div>
-
-          <div className={styles.formGroup}>
-            <label className={styles.label}>
-              Preço Promocional (R$) (Opcional)
-            </label>
-            <input
-              type="number"
-              step="0.01"
-              placeholder="Deixe em branco se não houver desconto"
-              value={promotionalPrice || ''}
-              onChange={(e) =>
-                setPromotionalPrice(e.target.value ? parseFloat(e.target.value) : undefined)
-              }
-              className={styles.input}
-            />
-          </div>
-        </div>
-        */}
 
         <div className={styles.checkboxGroup}>
           <label className={styles.checkLabel}>
@@ -747,7 +693,6 @@ function ProductForm() {
         </div>
       </div>
 
-      {/* 3. Media Upload & Ordering */}
       <div className={styles.formCard}>
         <div className={styles.cardHeader}>
           <div>
@@ -761,7 +706,6 @@ function ProductForm() {
           </div>
         </div>
 
-        {/* Dropzone */}
         <label className={styles.dropzone}>
           <input
             type="file"
@@ -794,7 +738,6 @@ function ProductForm() {
           )}
         </label>
 
-        {/* Video URL Input */}
         <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem' }}>
           <input
             type="url"
@@ -814,7 +757,6 @@ function ProductForm() {
           </button>
         </div>
 
-        {/* Media Grid */}
         {mediaList.length > 0 && (
           <div className={styles.mediaGrid}>
             {mediaList.map((media, index) => (
@@ -897,7 +839,6 @@ function ProductForm() {
         )}
       </div>
 
-      {/* 4. Variations: Colors, Measurements & Stock */}
       <div className={styles.formCard}>
         <div className={styles.cardHeader}>
           <div>
@@ -1066,7 +1007,6 @@ function ProductForm() {
         </button>
       </div>
 
-      {/* 5. Visibility Selection */}
       <div className={styles.formCard}>
         <div className={styles.cardHeader}>
           <div>
@@ -1125,7 +1065,6 @@ function ProductForm() {
         </div>
       </div>
 
-      {/* Bottom Save Button */}
       <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
         <button type="submit" disabled={isSaving} className={styles.btnSave}>
           {isSaving ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
@@ -1133,7 +1072,6 @@ function ProductForm() {
         </button>
       </div>
 
-      {/* Friendly Action Confirmation & Feedback Modal */}
       <ActionModal
         isOpen={modalConfig.isOpen}
         type={modalConfig.type}

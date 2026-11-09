@@ -32,9 +32,8 @@ export default function DestaquesAdminPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [togglingNewId, setTogglingNewId] = useState<string | null>(null);
   const [isRemoving, setIsRemoving] = useState(false);
-  const isRemovingRef = useRef(false); // guarda síncrona para evitar duplo clique
+  const isRemovingRef = useRef(false);
 
-  // Friendly Action Modal State
   const [modalConfig, setModalConfig] = useState<{
     isOpen: boolean;
     type: ActionModalType;
@@ -72,17 +71,14 @@ export default function DestaquesAdminPage() {
 
 
 
-  // Produtos que estão nos "Mais Desejados" da Home
   const featuredProducts = products.filter(
     (p) => p.featuredHome || p.destaqueHome
   );
 
-  // Produtos disponíveis para adicionar (não estão nos Mais Desejados)
   const availableProducts = products.filter(
     (p) => !p.featuredHome && !p.destaqueHome
   );
 
-  // Adicionar produto selecionado aos Mais Desejados
   const handleAddHighlight = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedProductId) return;
@@ -122,14 +118,12 @@ export default function DestaquesAdminPage() {
     }
   };
 
-  // Alternar se o produto é Lançamento (badge verde)
   const handleToggleLançamento = async (product: Product) => {
     if (togglingNewId) return;
     setTogglingNewId(product.id);
     const currentIsNew = Boolean(product.isNew || product.novidade);
     const newIsNew = !currentIsNew;
 
-    // Atualização otimista
     setProducts((prev) =>
       prev.map((p) =>
         p.id === product.id
@@ -157,9 +151,7 @@ export default function DestaquesAdminPage() {
     }
   };
 
-  // Efetiva a remoção da vitrine após confirmação
   const performRemoval = async (product: Product) => {
-    // Guarda síncrona: impede duplo disparo antes do re-render
     if (isRemovingRef.current) return;
     isRemovingRef.current = true;
     setIsRemoving(true);
@@ -193,7 +185,6 @@ export default function DestaquesAdminPage() {
     }
   };
 
-  // Remover dos Mais Desejados da Home (abre modal amigável de confirmação)
   const handleRemoveHighlight = (product: Product) => {
     setModalConfig({
       isOpen: true,
@@ -207,15 +198,8 @@ export default function DestaquesAdminPage() {
     });
   };
 
-  // formatPrice OCULTO TEMPORARIAMENTE — para reativar, descomente:
-  // const formatPrice = (val: number) =>
-  //   val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-
   return (
     <div className={styles.container}>
-
-
-      {/* Cabeçalho */}
       <div className={styles.headerCard}>
         <div className={styles.titleArea}>
           <h1 className={styles.title}>

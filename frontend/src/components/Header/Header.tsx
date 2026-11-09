@@ -71,7 +71,6 @@ export function Header() {
 
   return (
     <>
-      {/* Top Bar Oficial de Avisos */}
       <div className={styles.topbar}>
         <div className={`container ${styles.topbarContent}`}>
           <div className={styles.topbarHighlight}>
@@ -95,10 +94,8 @@ export function Header() {
         </div>
       </div>
 
-      {/* Header Principal */}
       <header className={styles.header}>
         <div className={`container ${styles.navContainer}`}>
-          {/* Logo TS EYEWEAR */}
           <Link href="/" className={styles.logo}>
             <img src="/logo.png" alt="TS EYEWEAR Logo" className={styles.logoImg} />
             <div className={styles.logoText}>
@@ -107,7 +104,6 @@ export function Header() {
             </div>
           </Link>
 
-          {/* Navegação Desktop */}
           <nav className={styles.navMenu}>
             <Link
               href="/catalogo?categoria=oculos-de-grau"
@@ -151,7 +147,6 @@ export function Header() {
             </Link>
           </nav>
 
-          {/* Quick Search Box */}
           <form onSubmit={handleSearch} className={styles.searchBox}>
             <Search size={18} className={styles.searchIcon} />
             <input
@@ -163,9 +158,7 @@ export function Header() {
             />
           </form>
 
-          {/* Right Action Buttons */}
           <div className={styles.actions}>
-            {/* Wishlist Button */}
             <Link
               href="/favoritos"
               className={styles.actionBtn}
@@ -177,7 +170,6 @@ export function Header() {
               )}
             </Link>
 
-            {/* Admin Dashboard Link - Exibido apenas se o administrador estiver autenticado */}
             {isAdmin && (
               <Link
                 href="/admin/dashboard"
@@ -189,7 +181,6 @@ export function Header() {
               </Link>
             )}
 
-            {/* Hamburger Mobile Button */}
             <button
               onClick={() => setIsMenuOpen(true)}
               className={styles.menuHamburger}
@@ -201,7 +192,6 @@ export function Header() {
         </div>
       </header>
 
-      {/* Mobile Drawer */}
       {isMenuOpen && (
         <div
           className={styles.drawerOverlay}
@@ -228,7 +218,6 @@ export function Header() {
                 </button>
               </div>
 
-              {/* Mobile Drawer Search */}
               <form onSubmit={handleSearch} style={{ marginTop: '16px' }}>
                 <input
                   type="text"
@@ -240,7 +229,6 @@ export function Header() {
                 />
               </form>
 
-              {/* Category Links */}
               <nav className={styles.drawerLinks}>
                 <Link
                   href="/catalogo?categoria=oculos-de-grau"
@@ -290,7 +278,6 @@ export function Header() {
                   <span>Quem Somos (5 Anos)</span>
                   <ChevronRight size={18} />
                 </Link>
-                {/* Link do Painel Admin no menu mobile - Somente se logado */}
                 {isAdmin && (
                   <Link
                     href="/admin/dashboard"

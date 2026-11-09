@@ -36,7 +36,6 @@ export default function DashboardPage() {
   const [isLoadingProducts, setIsLoadingProducts] = useState(true);
   const [isFetchingProducts, setIsFetchingProducts] = useState(false);
 
-  // Carrega métricas globais via SQL otimizado
   useEffect(() => {
     async function loadMetrics() {
       try {
@@ -51,7 +50,6 @@ export default function DashboardPage() {
     loadMetrics();
   }, []);
 
-  // Carrega página de produtos sob demanda
   const loadProducts = useCallback(
     async (pageToLoad: number, limitToLoad: number, isInitial = false) => {
       if (isInitial) setIsLoadingProducts(true);

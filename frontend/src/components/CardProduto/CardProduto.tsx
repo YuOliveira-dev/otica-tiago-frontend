@@ -136,23 +136,10 @@ export function ProductCard({ product, produto }: ProductCardProps) {
     setPhotoIndex(idx);
   };
 
-  // ===========================================================
-  // PREÇOS OCULTOS TEMPORARIAMENTE — para reativar, descomente:
-  // const regularPrice = activeProduct.price ?? activeProduct.precoVenda ?? 0;
-  // const promoPrice =
-  //   activeProduct.promotionalPrice ?? activeProduct.precoPromocional;
-  // const effectivePrice = promoPrice || regularPrice;
-  // const hasDiscount = !!promoPrice && promoPrice < regularPrice;
-  // const discountPercentage = hasDiscount
-  //   ? Math.round(((regularPrice - promoPrice) / regularPrice) * 100)
-  //   : 0;
-  // ===========================================================
-
   const whatsAppLink = generateWhatsAppLink({
     product: {
       title: activeProduct.title || activeProduct.titulo || '',
       parentSku: activeProduct.parentSku || activeProduct.skuPai || '',
-      // price: effectivePrice, // OCULTO — reativar junto com os preços
       color: currentVariation?.colorName || currentVariation?.corNome,
     },
     type: 'purchase',
@@ -163,7 +150,6 @@ export function ProductCard({ product, produto }: ProductCardProps) {
 
   return (
     <article className={styles.card}>
-      {/* Wishlist Button */}
       <button
         onClick={toggleFavorite}
         className={`${styles.wishlistBtn} ${isFavorite ? styles.wishlistBtnActive : ''}`}
@@ -174,7 +160,6 @@ export function ProductCard({ product, produto }: ProductCardProps) {
         <Heart size={20} fill={isFavorite ? 'var(--color-danger)' : 'none'} color={isFavorite ? 'var(--color-danger)' : 'var(--color-primary-800)'} />
       </button>
 
-      {/* Product Image Area with Selectable Photos */}
       <div className={styles.imageArea}>
         <Link
           href={`/produto/${activeProduct.id}`}
@@ -190,7 +175,6 @@ export function ProductCard({ product, produto }: ProductCardProps) {
           />
         </Link>
 
-        {/* Photo Navigation Arrows (visible when multiple photos available) */}
         {photosForVariation.length > 1 && (
           <>
             <button
@@ -210,7 +194,6 @@ export function ProductCard({ product, produto }: ProductCardProps) {
               <ChevronRight size={16} />
             </button>
 
-            {/* Photo Indicator Dots */}
             <div className={styles.photoDots}>
               {photosForVariation.map((_, i) => (
                 <button
@@ -226,23 +209,19 @@ export function ProductCard({ product, produto }: ProductCardProps) {
         )}
       </div>
 
-      {/* Card Content */}
       <div className={styles.cardContent}>
-        {/* Harmonious Badges Row using Design System Tokens */}
         <div className={styles.badgesRow}>
           <span className={styles.badgeExclusivo}>Só na TS</span>
           <span className={styles.badgeFrete}>Frete Grátis</span>
           {isNew && <span className={styles.badgeNovo}>Lançamento</span>}
         </div>
 
-        {/* Title */}
         <Link href={`/produto/${activeProduct.id}`} scroll={true} className={styles.titleLink}>
           <h3 className={styles.title} title={productTitle}>
             {productTitle}
           </h3>
         </Link>
 
-        {/* 5 Yellow Stars Rating */}
         <div className={styles.ratingRow} aria-label="Avaliação: 5 de 5 estrelas">
           <div className={styles.stars}>
             {[...Array(5)].map((_, i) => (
@@ -251,7 +230,6 @@ export function ProductCard({ product, produto }: ProductCardProps) {
           </div>
         </div>
 
-        {/* Color Swatches (Select color -> updates corresponding photo) */}
         {variations.length > 0 && (
           <div className={styles.colorSelectorArea}>
             <div className={styles.swatchesList}>
@@ -278,38 +256,11 @@ export function ProductCard({ product, produto }: ProductCardProps) {
           </div>
         )}
 
-        {/* ===========================================================
-             BLOCO DE PREÇOS OCULTO TEMPORARIAMENTE
-             Para reativar, remova este comentário e o fechamento abaixo,
-             e descomente os cálculos de preço acima.
-
-        <div className={styles.priceSection}>
-          <div className={styles.priceHeader}>
-            {hasDiscount && (
-              <span className={styles.priceOriginal}>
-                {regularPrice.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-              </span>
-            )}
-            {hasDiscount && (
-              <span className={styles.discountBadge}>{discountPercentage}%</span>
-            )}
-          </div>
-          <div className={styles.priceCurrent}>
-            {effectivePrice.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-          </div>
-          <div className={styles.installments}>
-            à vista no <strong>PIX</strong> com Frete Grátis Brasil
-          </div>
-        </div>
-             =========================================================== */}
-
-        {/* Preço sob consulta via WhatsApp */}
         <div className={styles.priceConsultSection}>
           <span className={styles.priceConsultLabel}>💬 Preço sob consulta</span>
           <span className={styles.priceConsultSub}>Solicite pelo WhatsApp e receba na hora</span>
         </div>
 
-        {/* Action Button: "Comprar Agora" via WhatsApp */}
         <div className={styles.actionsRow}>
           <a
             href={whatsAppLink}
