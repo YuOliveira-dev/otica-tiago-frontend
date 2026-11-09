@@ -419,18 +419,20 @@
       currentIdx = idx;
       renderNav();
       const m = modules[idx];
+      const slug = m.slug || m.folder.toLowerCase();
 
       document.getElementById('modTitle').textContent = m.title;
       document.getElementById('modSubtitle').textContent = m.subtitle;
-      document.getElementById('btnPdfDownload').href = `${m.folder}/${m.pdfFile}`;
+      document.getElementById('btnPdfDownload').href = `/manual/${slug}/${m.pdfFile}`;
+      document.getElementById('btnPdfDownload').setAttribute('download', m.pdfFile);
 
       const player = document.getElementById('videoPlayer');
       const src = document.getElementById('videoSource');
-      src.src = `${m.folder}/${m.videoFile}`;
+      src.src = `/manual/${slug}/${m.videoFile}`;
       player.load();
 
       const qr = document.getElementById('qrImg');
-      qr.src = `${m.folder}/qr-video.png`;
+      qr.src = `/manual/${slug}/qr-video.png`;
 
       const stepsList = document.getElementById('stepsList');
       stepsList.innerHTML = m.steps.map(s => `
@@ -440,13 +442,13 @@
             <h3>${s.title}</h3>
             <p>${s.desc}</p>
           </div>
-          <div class="step-img-link" onclick="openLightbox('${m.folder}/${s.img}')">
-            <img src="${m.folder}/${s.img}" alt="${s.title}">
+          <div class="step-img-link" onclick="openLightbox('/manual/${slug}/${s.img}')">
+            <img src="/manual/${slug}/${s.img}" alt="${s.title}">
           </div>
         </div>
       `).join('');
 
-      window.location.hash = m.folder;
+      window.location.hash = slug;
     }
 
     function openLightbox(src) {
@@ -458,8 +460,8 @@
       document.getElementById('lightbox').classList.remove('active');
     }
 
-    const hash = window.location.hash.replace('#', '');
-    const foundIdx = modules.findIndex(m => m.folder === hash);
+    const hash = window.location.hash.replace('#', '').toLowerCase();
+    const foundIdx = modules.findIndex(m => m.folder.toLowerCase() === hash || (m.slug && m.slug.toLowerCase() === hash));
     if (foundIdx >= 0) currentIdx = foundIdx;
 
     renderNav();

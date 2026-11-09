@@ -2,6 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
+  <base href="/manual/01-login/">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
   <title>TS EYEWEAR — Módulo 01: Login no Painel</title>
   <style>
@@ -26,7 +27,7 @@
       padding-bottom: 16px;
     }
     .logo-group { display: flex; align-items: center; gap: 10px; }
-    .brand-logo { color: #c5a96f; font-weight: 800; letter-spacing: 2px; font-size: 20px; }
+    .brand-logo { color: #c5a96f; font-weight: 800; letter-spacing: 2px; font-size: 20px; text-decoration: none; }
     .badge {
       background: rgba(197, 169, 111, 0.15);
       border: 1px solid rgba(197, 169, 111, 0.4);
@@ -89,10 +90,10 @@
   <div class="container">
     <header>
       <div class="logo-group">
-        <span class="brand-logo">TS EYEWEAR</span>
+        <a href="/" class="brand-logo">TS EYEWEAR</a>
         <span class="badge">MANUAL ONLINE</span>
       </div>
-      <a href="../" class="btn btn-secondary">← Ver Todos os Módulos</a>
+      <a href="/manual" class="btn btn-secondary">← Ver Todos os Módulos</a>
     </header>
 
     <h1 style="font-size: 24px; margin-bottom: 6px;">Módulo 01: Login no Painel</h1>
@@ -101,15 +102,18 @@
     </p>
 
     <div class="video-card">
-      <video controls autoplay playsinline style="position:absolute;top:0;left:0;width:100%;height:100%;"><source src="video-01-login.mp4" type="video/mp4"></video>
+      <video controls autoplay playsinline preload="auto" style="position:absolute;top:0;left:0;width:100%;height:100%;"><source src="/manual/01-login/video-01-login.mp4" type="video/mp4">Seu navegador não suporta a tag de vídeo.</video>
     </div>
 
     <div class="actions">
-      <a href="Manual-01-Login.pdf" target="_blank" class="btn">
+      <a href="/manual/01-login/Manual-01-Login.pdf" target="_blank" rel="noopener noreferrer" download="Manual-01-Login.pdf" class="btn">
         📄 Baixar Manual em PDF
       </a>
+      <a href="/manual/01-login/video-01-login.mp4" target="_blank" rel="noopener noreferrer" download="video-01-login.mp4" class="btn btn-secondary">
+        🎬 Baixar Vídeo (MP4)
+      </a>
       <div class="qr-box">
-        <img class="qr-img" src="qr-video.png" alt="QR Code">
+        <img class="qr-img" src="/manual/01-login/qr-video.png" alt="QR Code">
         <div>
           <div style="font-size: 12px; font-weight: 600; color: #c5a96f;">Assistir no Celular</div>
           <div style="font-size: 11px; color: #94a3b8;">Aponte a câmera para abrir</div>
