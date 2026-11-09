@@ -152,9 +152,24 @@ export default function AdminCategoriasPage() {
         try {
           await deleteCategory(id);
           await loadCategories();
-          closeModal();
-        } catch (err) {
+          setModalConfig({
+            isOpen: true,
+            type: 'success',
+            title: 'Categoria Excluída',
+            message: `A categoria "${name}" foi excluída com sucesso.`,
+            confirmText: 'Entendido',
+            onConfirm: closeModal,
+          });
+        } catch (err: any) {
           console.error('Erro ao excluir categoria:', err);
+          setModalConfig({
+            isOpen: true,
+            type: 'danger',
+            title: 'Erro ao Excluir',
+            message: err?.message || 'Falha ao excluir categoria.',
+            confirmText: 'Fechar',
+            onConfirm: closeModal,
+          });
         } finally {
           setIsDeletingCategory(false);
         }
@@ -195,17 +210,45 @@ export default function AdminCategoriasPage() {
     }
   };
 
-  const handleDeleteSubcategory = async (catId: string, subId: string) => {
-    if (deletingSubId) return;
-    setDeletingSubId(subId);
-    try {
-      await deleteSubcategory(catId, subId);
-      await loadCategories();
-    } catch (err) {
-      console.error('Erro ao excluir subcategoria:', err);
-    } finally {
-      setDeletingSubId(null);
-    }
+  const handleDeleteSubcategory = (catId: string, subId: string, subName?: string) => {
+    setModalConfig({
+      isOpen: true,
+      type: 'confirm',
+      title: 'Excluir Subcategoria',
+      message: `Tem certeza que deseja excluir a subcategoria "${subName || 'selecionada'}"?`,
+      confirmText: 'Sim, Excluir',
+      cancelText: 'Cancelar',
+      onConfirm: async () => {
+        setIsDeletingCategory(true);
+        setDeletingSubId(subId);
+        try {
+          await deleteSubcategory(catId, subId);
+          await loadCategories();
+          setModalConfig({
+            isOpen: true,
+            type: 'success',
+            title: 'Subcategoria Excluída',
+            message: `A subcategoria "${subName || ''}" foi excluída com sucesso.`,
+            confirmText: 'Entendido',
+            onConfirm: closeModal,
+          });
+        } catch (err: any) {
+          console.error('Erro ao excluir subcategoria:', err);
+          setModalConfig({
+            isOpen: true,
+            type: 'danger',
+            title: 'Erro ao Excluir',
+            message: err?.message || 'Falha ao excluir subcategoria.',
+            confirmText: 'Fechar',
+            onConfirm: closeModal,
+          });
+        } finally {
+          setIsDeletingCategory(false);
+          setDeletingSubId(null);
+        }
+      },
+      onCancel: closeModal,
+    });
   };
 
   return (
@@ -276,7 +319,7 @@ export default function AdminCategoriasPage() {
                             {subName}
                             <button
                               type="button"
-                              onClick={() => handleDeleteSubcategory(cat.id, sub.id)}
+                              onClick={() => handleDeleteSubcategory(cat.id, sub.id, subName)}
                               disabled={deletingSubId === sub.id}
                               className={styles.subTagRemove}
                               title="Remover subcategoria"

@@ -51,6 +51,8 @@ export default function AdminProdutosPage() {
   }, [searchQuery]);
 
   // Friendly Action Modal State
+  const [isDeletingProduct, setIsDeletingProduct] = useState(false);
+  const [isTogglingStatus, setIsTogglingStatus] = useState(false);
   const [modalConfig, setModalConfig] = useState<{
     isOpen: boolean;
     type: ActionModalType;
@@ -136,6 +138,7 @@ export default function AdminProdutosPage() {
       prev.map((p) => (p.id === product.id ? { ...p, status: newStatus } : p))
     );
 
+    setIsTogglingStatus(true);
     try {
       await toggleProductVisibility(product.id, newStatus);
       setModalConfig({
@@ -163,6 +166,7 @@ export default function AdminProdutosPage() {
       });
     } finally {
       setTogglingProductId(null);
+      setIsTogglingStatus(false);
     }
   };
 
@@ -201,7 +205,7 @@ export default function AdminProdutosPage() {
       confirmText: 'Sim, Excluir',
       cancelText: 'Cancelar',
       onConfirm: async () => {
-        closeModal();
+        setIsDeletingProduct(true);
         try {
           await deleteAdminProduct(product.id, true);
           setModalConfig({
@@ -219,9 +223,11 @@ export default function AdminProdutosPage() {
             type: 'danger',
             title: 'Erro ao Excluir',
             message: err.message || 'Falha ao excluir produto.',
-            confirmText: 'Entendido',
+            confirmText: 'Fechar',
             onConfirm: closeModal,
           });
+        } finally {
+          setIsDeletingProduct(false);
         }
       },
       onCancel: closeModal,
@@ -657,6 +663,7 @@ export default function AdminProdutosPage() {
         message={modalConfig.message}
         confirmText={modalConfig.confirmText}
         cancelText={modalConfig.cancelText}
+        isLoading={isDeletingProduct || isTogglingStatus}
         onConfirm={modalConfig.onConfirm || closeModal}
         onCancel={modalConfig.onCancel || closeModal}
         onClose={closeModal}

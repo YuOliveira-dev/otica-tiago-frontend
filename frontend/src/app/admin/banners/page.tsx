@@ -362,9 +362,24 @@ export default function AdminBannersPage() {
         try {
           await deleteBanner(id);
           await loadBanners();
-          closeActionModal();
-        } catch (err) {
+          setActionModalConfig({
+            isOpen: true,
+            type: 'success',
+            title: 'Banner Excluído',
+            message: `O banner "${bannerTitle}" foi removido com sucesso do carrossel principal.`,
+            confirmText: 'Entendido',
+            onConfirm: closeActionModal,
+          });
+        } catch (err: any) {
           console.error('Erro ao excluir banner:', err);
+          setActionModalConfig({
+            isOpen: true,
+            type: 'danger',
+            title: 'Erro ao Excluir',
+            message: err?.message || 'Falha ao remover banner.',
+            confirmText: 'Fechar',
+            onConfirm: closeActionModal,
+          });
         } finally {
           setIsDeleting(false);
         }
@@ -554,9 +569,24 @@ export default function AdminBannersPage() {
         try {
           await deleteHomeCategoryCard(id);
           await loadCategories();
-          closeActionModal();
-        } catch (err) {
+          setActionModalConfig({
+            isOpen: true,
+            type: 'success',
+            title: 'Card Removido',
+            message: `O card "${cardTitle}" foi removido com sucesso da vitrine.`,
+            confirmText: 'Entendido',
+            onConfirm: closeActionModal,
+          });
+        } catch (err: any) {
           console.error('Erro ao excluir card:', err);
+          setActionModalConfig({
+            isOpen: true,
+            type: 'danger',
+            title: 'Erro ao Excluir',
+            message: err?.message || 'Falha ao remover card de categoria.',
+            confirmText: 'Fechar',
+            onConfirm: closeActionModal,
+          });
         } finally {
           setIsDeleting(false);
         }

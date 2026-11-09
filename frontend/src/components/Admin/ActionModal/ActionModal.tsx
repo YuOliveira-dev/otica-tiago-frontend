@@ -26,6 +26,7 @@ export interface ActionModalProps {
   message: string;
   confirmText?: string;
   cancelText?: string;
+  loadingText?: string;
   onConfirm?: () => void;
   onCancel?: () => void;
   onClose?: () => void;
@@ -39,6 +40,7 @@ export function ActionModal({
   message,
   confirmText,
   cancelText = 'Cancelar',
+  loadingText,
   onConfirm,
   onCancel,
   onClose,
@@ -99,6 +101,18 @@ export function ActionModal({
 
   // Icon and theme config
   const renderIcon = () => {
+    if (isLoading) {
+      return (
+        <div className={`${styles.iconWrapper} ${styles.iconConfirm}`}>
+          <Loader2
+            size={32}
+            className="animate-spin"
+            style={{ animation: 'spin 1s linear infinite' }}
+          />
+        </div>
+      );
+    }
+
     switch (type) {
       case 'success':
         return (
@@ -209,7 +223,20 @@ export function ActionModal({
                 style={{ animation: 'spin 1s linear infinite' }}
               />
             )}
-            <span>{defaultConfirmText}</span>
+            <span>
+              {isLoading
+                ? loadingText ||
+                  (defaultConfirmText.toLowerCase().includes('excluir')
+                    ? 'Excluindo...'
+                    : defaultConfirmText.toLowerCase().includes('remover')
+                    ? 'Removendo...'
+                    : defaultConfirmText.toLowerCase().includes('ocultar')
+                    ? 'Ocultando...'
+                    : defaultConfirmText.toLowerCase().includes('salvar')
+                    ? 'Salvando...'
+                    : 'Processando...')
+                : defaultConfirmText}
+            </span>
           </button>
         </div>
       </div>
